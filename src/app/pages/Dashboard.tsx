@@ -69,8 +69,8 @@ function createPage(pageCount: number): CmsPage {
     title,
     navLabel: title,
     status: "draft",
-    seoTitle: `${title} | EHRay Photography`,
-    seoDescription: "Draft page managed through the EHRay dashboard.",
+    seoTitle: `${title} | Eight Nine Web Studio`,
+    seoDescription: "Draft page managed through the Eight Nine Web Studio dashboard.",
     sections: [
       {
         id: createCmsId("section"),
@@ -122,7 +122,7 @@ function createElement(type: CmsElementType = "text"): CmsElement {
   if (type === "package") return { ...base, label: "Package", text: "Package name\nIndicative AED 1,200\nFeature one\nFeature two" };
   if (type === "listItem") return { ...base, text: "Card title\nShort supporting copy", href: "#" };
   if (type === "heading") return { ...base, text: "New heading" };
-  if (type === "eyebrow") return { ...base, text: "EHRay Photography" };
+  if (type === "eyebrow") return { ...base, text: "Eight Nine Web Studio" };
 
   return { ...base, text: "Write the copy here." };
 }
@@ -141,7 +141,7 @@ function exportContent(content: CmsContent) {
   const url = URL.createObjectURL(file);
   const anchor = document.createElement("a");
   anchor.href = url;
-  anchor.download = "ehray-content-draft.json";
+  anchor.download = "eightnine-platform-content-draft.json";
   anchor.click();
   URL.revokeObjectURL(url);
 }
@@ -244,7 +244,7 @@ function DashboardGate({
   if (!authChecked) {
     return (
       <main className="min-h-screen bg-secondary text-foreground grid place-items-center px-5">
-        <SEO title="EHRay Dashboard Login" description="Secure EHRay Photography dashboard login." />
+        <SEO title="Eight Nine Web Studio Dashboard Login" description="Secure Eight Nine Web Studio dashboard login." />
         <div className="w-full max-w-md rounded-lg border border-border bg-background p-6">
           <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Secure dashboard</p>
           <h1 className="text-2xl font-medium text-foreground mb-3">Checking login</h1>
@@ -257,7 +257,7 @@ function DashboardGate({
   if (!isSupabaseConfigured()) {
     return (
       <main className="min-h-screen bg-secondary text-foreground grid place-items-center px-5">
-        <SEO title="EHRay Dashboard Setup" description="Supabase setup required for the EHRay dashboard." />
+        <SEO title="Eight Nine Web Studio Dashboard Setup" description="Supabase setup required for the Eight Nine Web Studio dashboard." />
         <div className="w-full max-w-xl rounded-lg border border-border bg-background p-6">
           <div className="flex items-center gap-2 text-sm font-medium text-foreground mb-4">
             <Cloud size={18} />
@@ -275,7 +275,7 @@ function DashboardGate({
 
   return (
     <main className="min-h-screen bg-secondary text-foreground grid place-items-center px-5">
-      <SEO title="EHRay Dashboard Login" description="Secure EHRay Photography dashboard login." />
+      <SEO title="Eight Nine Web Studio Dashboard Login" description="Secure Eight Nine Web Studio dashboard login." />
       <form onSubmit={onSubmit} className="w-full max-w-md rounded-lg border border-border bg-background p-6">
         <div className="flex items-center gap-2 text-sm font-medium text-foreground mb-4">
           <LogIn size={18} />
@@ -688,12 +688,12 @@ export default function Dashboard() {
 
   return (
     <main className="min-h-screen bg-secondary text-foreground">
-      <SEO title="EHRay Dashboard" description="Draft content dashboard for EHRay Photography." />
+      <SEO title="Eight Nine Web Studio Dashboard" description="Draft content dashboard for Eight Nine Web Studio." />
       <div className="border-b border-border bg-background">
         <div className="max-w-[1500px] mx-auto px-5 py-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-1">Secure CMS</p>
-            <h1 className="text-2xl font-medium text-foreground">EHRay content dashboard</h1>
+            <h1 className="text-2xl font-medium text-foreground">Eight Nine Web Studio content dashboard</h1>
             <p className="text-xs text-muted-foreground mt-1">{user.email}</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">

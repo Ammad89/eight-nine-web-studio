@@ -1,3 +1,4 @@
+import navLogo from "../../imports/platform/Eight Nine Logo for Nav Bar.svg";
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { Menu, X, ArrowRight, ChevronDown } from "lucide-react";
@@ -47,7 +48,7 @@ export default function Nav() {
 
         <Link to="/" aria-label={`${site.brand.name} - Home`} className="flex-none">
           <img
-            src={site.brand.logo}
+            src={navLogo}
             alt={`${site.brand.name} logo`}
             className="h-11 w-auto object-contain"
           />

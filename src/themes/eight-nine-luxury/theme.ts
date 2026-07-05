@@ -53,7 +53,7 @@ export const eightNineLuxuryTheme: ThemeContent = {
     ],
     buttonText: "Work with Ammad",
     buttonLink: "#contact",
-    image: "Gemini_Generated_Image_lfgepqlfgepqlfge.jpg",
+    image: "about-portrait",
     imageAlt: "Ammad Shafique, owner and lead photographer at Eight Nine Photography",
   },
 
@@ -195,9 +195,9 @@ export const eightNineLuxuryTheme: ThemeContent = {
       "Lifestyle Photographer UAE",
       "Natural Light Photographer Dubai",
     ],
-    siteUrl: "https://www.eightninephotography.com",
-    canonicalUrl: "https://www.eightninephotography.com",
-    schemaId: "https://www.eightninephotography.com",
+    siteUrl: "https://platform.eightnineglobal.com",
+    canonicalUrl: "https://platform.eightnineglobal.com",
+    schemaId: "https://platform.eightnineglobal.com",
     ogImage: "",
   },
 };

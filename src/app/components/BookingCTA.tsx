@@ -120,14 +120,14 @@ export default function BookingCTA({
         {/* Quick CTAs */}
         <div className="flex flex-wrap justify-center gap-4 mb-14">
           <a
-            href={`mailto:${CONTACT_EMAIL}`}
+            href={`mailto:${site.contact.email}`}
             className="group inline-flex items-center gap-[18px] pl-8 pr-3.5 py-3.5 bg-white text-black text-xs tracking-[0.12em] uppercase font-medium rounded-full hover:bg-white/90 transition-colors duration-500"
           >
             <span className="group-hover:[order:1]">Email Directly</span>
             <span className="group-hover:[order:0] flex items-center justify-center w-5 h-5"><ArrowRight size={14} /></span>
           </a>
           <a
-            href="https://wa.me/971569358629"
+            href={`https://wa.me/${site.contact.whatsapp}`}
             target="_blank"
             rel="noopener noreferrer"
             className="group inline-flex items-center gap-[18px] pl-8 pr-3.5 py-3.5 border border-white/25 text-white text-xs tracking-[0.12em] uppercase font-medium rounded-full hover:border-white/55 transition-colors duration-500"
@@ -169,7 +169,7 @@ export default function BookingCTA({
                 </div>
                 <div className="flex flex-col gap-2">
                   <label className="text-white/50 text-[10px] tracking-[0.2em] uppercase">Phone Number *</label>
-                  <input required name="phone" type="tel" placeholder="+971 56 935 8629" className={`${inputClass()} rounded-full`} />
+                  <input required name="phone" type="tel" placeholder="+971 56 830 8833" className={`${inputClass()} rounded-full`} />
                 </div>
                 <div className="flex flex-col gap-2">
                   <label className="text-white/50 text-[10px] tracking-[0.2em] uppercase">Email Address *</label>
@@ -286,7 +286,7 @@ export default function BookingCTA({
                 </div>
                 <div className="flex flex-col gap-2">
                   <label className="text-white/50 text-[10px] tracking-[0.2em] uppercase">Phone Number *</label>
-                  <input required name="phone" type="tel" placeholder="+971 56 935 8629" className={`${inputClass()} rounded-full`} />
+                  <input required name="phone" type="tel" placeholder="+971 56 830 8833" className={`${inputClass()} rounded-full`} />
                 </div>
                 <div className="flex flex-col gap-2">
                   <label className="text-white/50 text-[10px] tracking-[0.2em] uppercase">Session Interest</label>

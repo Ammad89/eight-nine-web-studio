@@ -71,7 +71,80 @@ export function createDefaultWebsiteSchema(): WebsiteSchema {
           keywords: theme.seo.keywords,
           canonical: site.domain.canonicalUrl,
         },
-        sections: [],
+        sections: [
+          {
+            id: "home-hero",
+            type: "hero",
+            label: "Hero",
+            order: 1,
+            hidden: false,
+            data: {
+              eyebrow: "Eight Nine Web Studio",
+              title: "Build beautiful client websites from one reusable platform.",
+              subtitle: "A modular website system for launching branded websites with editable pages, sections, navigation, collections and publishing.",
+              primaryCtaLabel: "Open Dashboard",
+              primaryCtaHref: "/dashboard-v2",
+              secondaryCtaLabel: "View Schema Preview",
+              secondaryCtaHref: "/schema-preview/home",
+              image: "family-hero",
+              imageAlt: "Website platform hero image",
+              align: "left",
+            },
+          },
+          {
+            id: "home-about",
+            type: "imageText",
+            label: "Platform Introduction",
+            order: 2,
+            hidden: false,
+            data: {
+              eyebrow: "Reusable Foundation",
+              title: "One system. Many websites.",
+              content: "Eight Nine Web Studio is being built as a reusable website platform for client projects. Instead of rebuilding every website from scratch, each site can be assembled from structured pages, reusable sections, editable collections and controlled brand settings.\n\nThis foundation allows future client websites to launch faster while keeping design quality, content structure and publishing workflows consistent.",
+              image: "about-portrait",
+              imageAlt: "Ammad portrait",
+              imagePosition: "right",
+              ctaLabel: "Manage Pages",
+              ctaHref: "/dashboard-v2",
+            },
+          },
+          {
+            id: "home-services",
+            type: "servicesGrid",
+            label: "Services Collection",
+            order: 3,
+            hidden: false,
+            data: {
+              eyebrow: "CMS Collections",
+              title: "Reusable content blocks for every client site.",
+              subtitle: "Services, portfolio items, testimonials and FAQs can be managed once and rendered across multiple pages.",
+              collection: "services",
+              maxItems: 6,
+              featuredOnly: false,
+              layout: "grid",
+              ctaLabel: "Explore Portfolio",
+              ctaHref: "/portfolio",
+            },
+          },
+          {
+            id: "home-cta",
+            type: "cta",
+            label: "Call to Action",
+            order: 4,
+            hidden: false,
+            data: {
+              eyebrow: "Build 70",
+              title: "The visual page builder foundation is now active.",
+              subtitle: "This page is rendered from WebsiteSchema using the universal PageRenderer and SectionRenderer.",
+              primaryCtaLabel: "Open Dashboard",
+              primaryCtaHref: "/dashboard-v2",
+              secondaryCtaLabel: "Preview Home",
+              secondaryCtaHref: "/schema-preview/home",
+              tone: "dark",
+              align: "center",
+            },
+          },
+        ],
       },
       {
         id: "portfolio",
@@ -83,7 +156,81 @@ export function createDefaultWebsiteSchema(): WebsiteSchema {
           title: "Portfolio",
           description: "Photography portfolio.",
         },
-        sections: [],
+        
+        sections: [
+          {
+            id: "home-hero",
+            type: "hero",
+            label: "Hero",
+            order: 1,
+            hidden: false,
+            data: {
+              eyebrow: "Eight Nine Web Studio",
+              title: "Build premium websites without rebuilding every project.",
+              subtitle: "A reusable website platform with editable pages, collections, themes and publishing.",
+              primaryCtaLabel: "Open Dashboard",
+              primaryCtaHref: "/dashboard-v2",
+              secondaryCtaLabel: "View Preview",
+              secondaryCtaHref: "/schema-preview/home",
+              image: "family-hero",
+              imageAlt: "Hero",
+              align: "left"
+            }
+          },
+          {
+            id: "home-about",
+            type: "imageText",
+            label: "Introduction",
+            order: 2,
+            hidden: false,
+            data: {
+              eyebrow: "Reusable Platform",
+              title: "One platform powering unlimited client websites.",
+              content: "Eight Nine Web Studio separates design from content so every website is assembled from reusable sections instead of bespoke code.\\n\\nEvery page can be edited visually while keeping branding, structure and publishing consistent.",
+              image: "about-portrait",
+              imageAlt: "Founder",
+              imagePosition: "right",
+              ctaLabel: "Manage Website",
+              ctaHref: "/dashboard-v2"
+            }
+          },
+          {
+            id: "home-services",
+            type: "servicesGrid",
+            label: "Services",
+            order: 3,
+            hidden: false,
+            data: {
+              eyebrow: "Collections",
+              title: "Reusable CMS collections.",
+              subtitle: "Services, portfolio, testimonials and FAQs are all driven from structured collections.",
+              collection: "services",
+              layout: "grid",
+              maxItems: 6,
+              ctaLabel: "Explore",
+              ctaHref: "/portfolio"
+            }
+          },
+          {
+            id: "home-cta",
+            type: "cta",
+            label: "CTA",
+            order: 4,
+            hidden: false,
+            data: {
+              eyebrow: "Website Platform",
+              title: "Universal rendering is now active.",
+              subtitle: "This page is being rendered from WebsiteSchema instead of handcrafted React pages.",
+              primaryCtaLabel: "Dashboard",
+              primaryCtaHref: "/dashboard-v2",
+              secondaryCtaLabel: "Preview",
+              secondaryCtaHref: "/schema-preview/home",
+              tone: "dark",
+              align: "center"
+            }
+          }
+        ],
+
       },
       {
         id: "about",

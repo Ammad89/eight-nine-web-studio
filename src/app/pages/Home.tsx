@@ -7,7 +7,8 @@ import {
   resolveThemeAsset,
 } from "../../theme-engine";
 import SEO from "../components/SEO";
-import emilyImage from "../../imports/optimized/Gemini_Generated_Image_lfgepqlfgepqlfge.jpg";
+import platformLogo from "../../imports/platform/Eight Nine Logo.jpg";
+import ammadImage from "../../imports/platform/Ammad Portrait shot.jpg";
 import portfolioFamilies from "../../imports/optimized/outdoor-shot-of-pleased-man-and-woman-stand-closel-2026-05-28-23-39-35-utc.JPG";
 import portfolioPets from "../../imports/optimized/dog-in-autumn-foliage-wearing-a-red-collar-2026-03-25-00-44-16-utc.jpg";
 import portfolioBranding from "../../imports/optimized/japanese-woman-in-office-portrait-2026-03-09-05-22-48-utc.jpg";
@@ -26,7 +27,7 @@ const homeSchema = {
   "description": theme.seo.description,
   "url": site.domain.siteUrl,
   "telephone": site.contact.phone,
-  "image": "https://static.wixstatic.com/media/7cfb53_8c7fcb8badd6496dbd89b9ca004f575d~mv2.png",
+  "image": platformLogo,
   "address": { "@type": "PostalAddress", "addressLocality": site.contact.address, "addressCountry": "AE" },
   "geo": { "@type": "GeoCoordinates", "latitude": 25.2048, "longitude": 55.2708 },
   "priceRange": site.business.priceRange,
@@ -245,7 +246,7 @@ export default function Home() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-6 relative">
             {theme.process.map((step, i) => (
               <div key={step.number} className="relative">
-                {i < steps.length - 1 && <div className="hidden lg:block absolute top-9 left-full w-full h-px bg-border -translate-x-3 z-0 pointer-events-none" />}
+                {i < theme.process.length - 1 && <div className="hidden lg:block absolute top-9 left-full w-full h-px bg-border -translate-x-3 z-0 pointer-events-none" />}
                 <p className="text-[3.5rem] font-medium text-muted/80 mb-4 leading-none" style={{ fontFamily: "'Lora', Georgia, serif" }}>{step.number}</p>
                 <h3 className="text-base font-medium text-foreground mb-3" style={{ fontFamily: "'Lora', Georgia, serif" }}>{step.title}</h3>
                 <p className="text-muted-foreground text-[13px] leading-relaxed">{step.description}</p>

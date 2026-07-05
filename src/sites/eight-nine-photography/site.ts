@@ -1,3 +1,6 @@
+import navLogo from "../../imports/platform/Eight Nine Logo for Nav Bar.svg";
+import footerLogo from "../../imports/platform/Eight Nine Logo for Footer.svg";
+import platformLogo from "../../imports/platform/Eight Nine Logo.jpg";
 import { eightNinePhotographyFooter } from "./footer";
 import { eightNinePhotographyNavigation } from "./navigation";
 
@@ -8,21 +11,21 @@ export const eightNinePhotographySite = {
     name: "Eight Nine Photography",
     owner: "Ammad Shafique",
     tagline: "Natural light and authentic lifestyle photography",
-    logo: "https://static.wixstatic.com/media/7cfb53_8c7fcb8badd6496dbd89b9ca004f575d~mv2.png",
+    logo: navLogo,
     favicon: "",
   },
 
   domain: {
-    siteUrl: "https://www.eightninephotography.com",
-    canonicalUrl: "https://www.eightninephotography.com",
-    schemaId: "https://www.eightninephotography.com",
+    siteUrl: "https://platform.eightnineglobal.com",
+    canonicalUrl: "https://platform.eightnineglobal.com",
+    schemaId: "https://platform.eightnineglobal.com",
   },
 
   contact: {
-    email: "hello@eightninephotography.com",
-    phone: "+971569358629",
-    phoneDisplay: "+971 (0)56 935 8629",
-    whatsapp: "971569358629",
+    email: "hello@eightnineglobal.com",
+    phone: "+971568308833",
+    phoneDisplay: "+971 56 830 8833",
+    whatsapp: "971568308833",
     address: "Dubai, United Arab Emirates",
   },
 

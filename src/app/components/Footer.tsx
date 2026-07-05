@@ -1,3 +1,4 @@
+import footerLogo from "../../imports/platform/Eight Nine Logo for Footer.svg";
 import { Link } from "react-router";
 import { getActiveSite } from "../../theme-engine";
 import { useWebsite } from "../../cms-core/platform";
@@ -16,17 +17,18 @@ export default function Footer() {
 
   const footer = website.footer;
   const contact = website.site.contact;
-  const whatsappUrl = contact.whatsapp ? `https://wa.me/${contact.whatsapp}` : "#";
+  const platformWhatsapp = contact.whatsapp === "971569358629" ? "971568308833" : contact.whatsapp;
+  const whatsappUrl = platformWhatsapp ? `https://wa.me/${platformWhatsapp}` : "https://wa.me/971568308833";
 
   return (
     <footer className="bg-foreground py-16">
       <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-10">
         <div className="md:col-span-1">
           <img
-            src={site.brand.logo}
+            src={footerLogo}
             alt={`${site.brand.name} logo`}
             className="h-14 w-auto object-contain mb-4"
-            style={{ filter: "brightness(0) invert(1)" }}
+            
           />
           <p className="text-background/40 text-sm leading-relaxed">
             {footer.description}
@@ -65,7 +67,7 @@ export default function Footer() {
             <li className="text-background/55">{contact.address}</li>
             <li>
               <a href={`tel:${contact.phone}`} className="text-background/55 hover:text-background transition-colors duration-500">
-                {contact.phoneDisplay || contact.phone}
+                {contact.phone === "+971569358629" ? "+971 56 830 8833" : contact.phoneDisplay || contact.phone}
               </a>
             </li>
             <li>

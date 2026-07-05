@@ -1,39 +1,33 @@
-import { Link, useParams } from "react-router";
-import { GenericPageRenderer } from "../../theme-engine";
+import { useParams } from "react-router";
 import { useWebsite } from "../../cms-core/platform";
+import PageRenderer from "../../theme-engine/PageRenderer";
 
 export default function SchemaPreviewPage() {
   const { pageId } = useParams();
   const { website } = useWebsite();
 
-  const page = website.pages.find(item => item.id === pageId || item.slug.replace(/^\//, "") === pageId);
+  const normalizedPageId = pageId || "home";
+
+  const page = website.pages.find(item =>
+    item.id === normalizedPageId ||
+    item.slug === normalizedPageId ||
+    item.slug === `/${normalizedPageId}`
+  );
 
   if (!page) {
     return (
-      <section className="pt-[72px] py-28 bg-background">
-        <div className="max-w-7xl mx-auto px-6 text-center">
-          <p className="text-muted-foreground text-[10px] tracking-[0.35em] uppercase mb-4 font-medium">
-            Schema Preview
+      <main className="min-h-screen bg-background pt-32 pb-24">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <p className="mb-3 text-xs uppercase tracking-[0.25em] text-muted-foreground">
+            Page Not Found
           </p>
-          <h1
-            className="text-4xl sm:text-5xl font-medium text-foreground mb-5"
-            style={{ fontFamily: "'Lora', Georgia, serif" }}
-          >
-            Page not found
+          <h1 className="text-4xl font-semibold text-foreground">
+            No schema page found for {normalizedPageId}
           </h1>
-          <p className="text-muted-foreground max-w-xl mx-auto text-sm leading-relaxed mb-8">
-            No WebsiteSchema page was found for this preview route.
-          </p>
-          <Link
-            to="/dashboard-v2"
-            className="inline-flex items-center rounded-full bg-foreground px-6 py-3 text-xs font-medium uppercase tracking-[0.12em] text-background"
-          >
-            Return to Dashboard
-          </Link>
         </div>
-      </section>
+      </main>
     );
   }
 
-  return <GenericPageRenderer page={page} />;
+  return <PageRenderer page={page} />;
 }
