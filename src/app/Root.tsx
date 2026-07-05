@@ -15,10 +15,10 @@ export default function Root() {
       {!isDashboard && <Footer />}
       {!isDashboard && (
         <a
-          href="https://wa.me/971569358629"
+          href="https://wa.me/971568308833"
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="Contact EHRay Photography via WhatsApp"
+          aria-label="Contact Eight Nine Web Studio via WhatsApp"
           className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-foreground text-background flex items-center justify-center rounded-full shadow-xl hover:scale-110 active:scale-95 transition-transform duration-500"
         >
           <MessageCircle size={24} />
