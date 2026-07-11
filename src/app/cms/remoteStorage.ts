@@ -78,9 +78,10 @@ export async function getDashboardUser() {
   const supabase = getSupabaseClient();
   if (!supabase) return null;
 
-  const { data, error } = await supabase.auth.getUser();
+  const { data, error } = await supabase.auth.getSession();
   if (error) return null;
-  return data.user;
+
+  return data.session?.user || null;
 }
 
 async function fetchCmsDocument(id: string) {

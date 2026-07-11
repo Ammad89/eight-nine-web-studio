@@ -94,18 +94,37 @@ export default function DashboardV2() {
         setAuthChecked(true);
       });
 
-    const subscription = supabase?.auth.onAuthStateChange(async (_event, session) => {
-      setUser(session?.user || null);
+    const subscription = supabase?.auth.onAuthStateChange((_event, session) => {
+      const nextUser = session?.user || null;
+
+      setUser(nextUser);
+      setAuthChecked(true);
       setAdminChecked(false);
 
-      if (session?.user) {
-        const adminResult = await isDashboardAdmin();
-        setIsAdmin(adminResult);
-      } else {
-        setIsAdmin(false);
-      }
+      window.setTimeout(() => {
+        if (!active) return;
 
-      setAdminChecked(true);
+        if (!nextUser) {
+          setIsAdmin(false);
+          setAdminChecked(true);
+          return;
+        }
+
+        void isDashboardAdmin()
+          .then(adminResult => {
+            if (!active) return;
+            setIsAdmin(adminResult);
+          })
+          .catch(error => {
+            console.error("Unable to check dashboard permissions.", error);
+            if (!active) return;
+            setIsAdmin(false);
+          })
+          .finally(() => {
+            if (!active) return;
+            setAdminChecked(true);
+          });
+      }, 0);
     }).data.subscription;
 
     return () => {
