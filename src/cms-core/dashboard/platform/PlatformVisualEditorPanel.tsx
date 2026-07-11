@@ -36,6 +36,14 @@ export default function PlatformVisualEditorPanel() {
     [selectedPage, selectedSectionId],
   );
 
+  const orderedSections = useMemo(
+    () =>
+      [...(selectedPage?.sections || [])].sort(
+        (a, b) => a.sortOrder - b.sortOrder,
+      ),
+    [selectedPage],
+  );
+
   function selectSection(section: PageSection) {
     setSelectedSectionId(section.id);
   }
@@ -361,7 +369,114 @@ export default function PlatformVisualEditorPanel() {
         </select>
       </div>
 
-      <div className="grid min-h-0 flex-1 grid-cols-1 xl:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="grid min-h-0 flex-1 grid-cols-1 xl:grid-cols-[250px_minmax(0,1fr)_360px]">
+        <aside className="overflow-y-auto border-r border-border bg-background">
+          <div className="border-b border-border p-4">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] opacity-50">
+              Navigator
+            </p>
+
+            <h3 className="mt-2 text-sm font-semibold">
+              Pages
+            </h3>
+
+            <div className="mt-3 space-y-1">
+              {website.pages.map(page => {
+                const isActive = page.id === selectedPage.id;
+
+                return (
+                  <button
+                    key={page.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedPageId(page.id);
+                      setSelectedSectionId("");
+                    }}
+                    className={`w-full rounded-lg px-3 py-2 text-left transition ${
+                      isActive
+                        ? "bg-foreground text-background"
+                        : "hover:bg-muted"
+                    }`}
+                  >
+                    <span className="block text-sm font-medium">
+                      {page.title}
+                    </span>
+
+                    <span
+                      className={`mt-1 block text-[11px] ${
+                        isActive ? "opacity-70" : "opacity-50"
+                      }`}
+                    >
+                      {page.slug}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="p-4">
+            <div className="flex items-center justify-between gap-3">
+              <h3 className="text-sm font-semibold">
+                Sections
+              </h3>
+
+              <span className="rounded-full border border-border px-2 py-0.5 text-[10px] opacity-60">
+                {orderedSections.length}
+              </span>
+            </div>
+
+            {!orderedSections.length ? (
+              <p className="mt-4 rounded-lg border border-dashed border-border p-3 text-xs leading-5 opacity-60">
+                This page has no sections yet.
+              </p>
+            ) : (
+              <div className="mt-3 space-y-1">
+                {orderedSections.map((section, index) => {
+                  const isActive = section.id === selectedSectionId;
+                  const isHidden = section.visible === false;
+
+                  return (
+                    <button
+                      key={section.id}
+                      type="button"
+                      onClick={() => setSelectedSectionId(section.id)}
+                      className={`flex w-full items-center gap-3 rounded-lg border px-3 py-2 text-left transition ${
+                        isActive
+                          ? "border-foreground bg-muted"
+                          : "border-transparent hover:border-border hover:bg-muted/60"
+                      }`}
+                    >
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-border text-[10px] font-semibold">
+                        {index + 1}
+                      </span>
+
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-xs font-medium capitalize">
+                          {section.type}
+                        </span>
+
+                        <span className="mt-0.5 block truncate text-[10px] opacity-50">
+                          {section.id}
+                        </span>
+                      </span>
+
+                      <span
+                        className={`h-2 w-2 shrink-0 rounded-full ${
+                          isHidden
+                            ? "bg-neutral-300"
+                            : "bg-green-500"
+                        }`}
+                        title={isHidden ? "Hidden" : "Visible"}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </aside>
+
         <div
           className="overflow-auto bg-neutral-100 p-5"
           onClick={() => setSelectedSectionId("")}
