@@ -96,6 +96,142 @@ export default function PlatformVisualEditorPanel() {
     }));
   }
 
+  function moveSelectedSection(direction: "up" | "down") {
+    if (!selectedPage || !selectedSection) return;
+
+    const orderedSections = [...selectedPage.sections].sort(
+      (a, b) => a.sortOrder - b.sortOrder,
+    );
+
+    const currentIndex = orderedSections.findIndex(
+      section => section.id === selectedSection.id,
+    );
+
+    const targetIndex =
+      direction === "up" ? currentIndex - 1 : currentIndex + 1;
+
+    if (
+      currentIndex < 0 ||
+      targetIndex < 0 ||
+      targetIndex >= orderedSections.length
+    ) {
+      return;
+    }
+
+    const targetSection = orderedSections[targetIndex];
+
+    setWebsite(current => ({
+      ...current,
+      pages: current.pages.map(page => {
+        if (page.id !== selectedPage.id) return page;
+
+        return {
+          ...page,
+          sections: page.sections.map(section => {
+            if (section.id === selectedSection.id) {
+              return {
+                ...section,
+                sortOrder: targetSection.sortOrder,
+              };
+            }
+
+            if (section.id === targetSection.id) {
+              return {
+                ...section,
+                sortOrder: selectedSection.sortOrder,
+              };
+            }
+
+            return section;
+          }),
+        };
+      }),
+      publishing: {
+        ...current.publishing,
+        updatedAt: new Date().toISOString(),
+      },
+    }));
+  }
+
+  function duplicateSelectedSection() {
+    if (!selectedPage || !selectedSection) return;
+
+    const duplicateId = `${selectedSection.id}-copy-${Date.now()}`;
+    const duplicateSortOrder = selectedSection.sortOrder + 1;
+
+    setWebsite(current => ({
+      ...current,
+      pages: current.pages.map(page => {
+        if (page.id !== selectedPage.id) return page;
+
+        const shiftedSections = page.sections.map(section =>
+          section.sortOrder >= duplicateSortOrder
+            ? {
+                ...section,
+                sortOrder: section.sortOrder + 1,
+              }
+            : section,
+        );
+
+        const duplicate: PageSection = {
+          ...selectedSection,
+          id: duplicateId,
+          sortOrder: duplicateSortOrder,
+          data: {
+            ...selectedSection.data,
+          },
+        };
+
+        return {
+          ...page,
+          sections: [...shiftedSections, duplicate],
+        };
+      }),
+      publishing: {
+        ...current.publishing,
+        updatedAt: new Date().toISOString(),
+      },
+    }));
+
+    setSelectedSectionId(duplicateId);
+  }
+
+  function deleteSelectedSection() {
+    if (!selectedPage || !selectedSection) return;
+
+    const confirmed = window.confirm(
+      `Delete the ${selectedSection.type} section? This cannot be undone unless you restore a saved version.`,
+    );
+
+    if (!confirmed) return;
+
+    setWebsite(current => ({
+      ...current,
+      pages: current.pages.map(page => {
+        if (page.id !== selectedPage.id) return page;
+
+        const remainingSections = page.sections
+          .filter(section => section.id !== selectedSection.id)
+          .sort((a, b) => a.sortOrder - b.sortOrder)
+          .map((section, index) => ({
+            ...section,
+            sortOrder: index + 1,
+          }));
+
+        return {
+          ...page,
+          sections: remainingSections,
+        };
+      }),
+      publishing: {
+        ...current.publishing,
+        updatedAt: new Date().toISOString(),
+      },
+    }));
+
+    setSelectedSectionId("");
+  }
+
   function renderField(field: string, value: unknown) {
     if (typeof value === "boolean") {
       return (
@@ -267,6 +403,52 @@ export default function PlatformVisualEditorPanel() {
                 <span className="rounded-full border border-border px-2 py-1 text-[10px] uppercase tracking-[0.15em]">
                   {selectedSection.id}
                 </span>
+              </div>
+
+              <div className="mt-5 grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => moveSelectedSection("up")}
+                  className="rounded-lg border border-border px-3 py-2 text-xs font-medium hover:bg-muted"
+                >
+                  Move Up
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => moveSelectedSection("down")}
+                  className="rounded-lg border border-border px-3 py-2 text-xs font-medium hover:bg-muted"
+                >
+                  Move Down
+                </button>
+
+                <button
+                  type="button"
+                  onClick={duplicateSelectedSection}
+                  className="rounded-lg border border-border px-3 py-2 text-xs font-medium hover:bg-muted"
+                >
+                  Duplicate
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    updateSection({
+                      visible: selectedSection.visible === false,
+                    })
+                  }
+                  className="rounded-lg border border-border px-3 py-2 text-xs font-medium hover:bg-muted"
+                >
+                  {selectedSection.visible === false ? "Show" : "Hide"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={deleteSelectedSection}
+                  className="col-span-2 rounded-lg border border-red-300 px-3 py-2 text-xs font-medium text-red-700 hover:bg-red-50"
+                >
+                  Delete Section
+                </button>
               </div>
 
               <div className="mt-6 space-y-5">
