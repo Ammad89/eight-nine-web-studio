@@ -3,7 +3,6 @@ import CmsShell from "../../cms-core/dashboard/CmsShell";
 import PagesPanel from "../../cms-core/dashboard/PagesPanel";
 import BlocksPanel from "../../cms-core/dashboard/BlocksPanel";
 import FieldsPanel from "../../cms-core/dashboard/FieldsPanel";
-import PreviewRenderer from "../../cms-core/dashboard/PreviewRenderer";
 import ThemePanel from "../../cms-core/dashboard/ThemePanel";
 import SiteSettingsPanel from "../../cms-core/dashboard/SiteSettingsPanel";
 import MediaLibrary from "../../cms-core/dashboard/MediaLibrary";
@@ -498,13 +497,6 @@ export default function DashboardV2() {
             />
           )}
         </div>
-      }
-      preview={
-        <PreviewRenderer
-          page={editor.selectedPage}
-          theme={editor.theme}
-          siteSettings={editor.siteSettings}
-        />
       }
     />
   );
