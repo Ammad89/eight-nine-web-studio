@@ -1,7 +1,60 @@
 import { useMemo, useState } from "react";
-import { useWebsite } from "../../platform";
-import type { PageSection } from "../../platform";
+import {
+  getDefaultSectionData,
+  useWebsite,
+} from "../../platform";
+import type {
+  PageSection,
+  SectionType,
+} from "../../platform";
 import PageRenderer from "../../../theme-engine/PageRenderer";
+
+const sectionLibrary: Array<{
+  type: SectionType;
+  title: string;
+  description: string;
+}> = [
+  {
+    type: "hero",
+    title: "Hero",
+    description: "Large headline, supporting copy and calls to action.",
+  },
+  {
+    type: "text",
+    title: "Text",
+    description: "Editorial copy, introductions and supporting content.",
+  },
+  {
+    type: "imageText",
+    title: "Image and Text",
+    description: "A balanced visual and content split section.",
+  },
+  {
+    type: "servicesGrid",
+    title: "Services Grid",
+    description: "Display services from the website collection.",
+  },
+  {
+    type: "portfolioGrid",
+    title: "Portfolio Grid",
+    description: "Show selected portfolio or project entries.",
+  },
+  {
+    type: "testimonials",
+    title: "Testimonials",
+    description: "Feature selected client reviews and quotes.",
+  },
+  {
+    type: "faq",
+    title: "FAQ",
+    description: "Present common questions and useful answers.",
+  },
+  {
+    type: "cta",
+    title: "Call to Action",
+    description: "Drive visitors toward the next important action.",
+  },
+];
 
 function fieldClass() {
   return "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm";
@@ -22,6 +75,7 @@ export default function PlatformVisualEditorPanel() {
   const [selectedSectionId, setSelectedSectionId] = useState("");
   const [draggedSectionId, setDraggedSectionId] = useState("");
   const [dragOverSectionId, setDragOverSectionId] = useState("");
+  const [sectionLibraryOpen, setSectionLibraryOpen] = useState(false);
 
   const selectedPage = useMemo(
     () =>
@@ -104,6 +158,46 @@ export default function PlatformVisualEditorPanel() {
         updatedAt: new Date().toISOString(),
       },
     }));
+  }
+
+  function addSectionFromLibrary(type: SectionType) {
+    if (!selectedPage) return;
+
+    const nextId = `section-${type}-${Date.now()}`;
+    const nextOrder =
+      selectedPage.sections.reduce(
+        (highest, section) =>
+          Math.max(highest, section.sortOrder),
+        0,
+      ) + 1;
+
+    const nextSection: PageSection = {
+      id: nextId,
+      type,
+      variant: "default",
+      visible: true,
+      sortOrder: nextOrder,
+      data: getDefaultSectionData(type),
+    };
+
+    setWebsite(current => ({
+      ...current,
+      pages: current.pages.map(page =>
+        page.id === selectedPage.id
+          ? {
+              ...page,
+              sections: [...page.sections, nextSection],
+            }
+          : page,
+      ),
+      publishing: {
+        ...current.publishing,
+        updatedAt: new Date().toISOString(),
+      },
+    }));
+
+    setSelectedSectionId(nextId);
+    setSectionLibraryOpen(false);
   }
 
   function reorderSections(
@@ -484,6 +578,14 @@ export default function PlatformVisualEditorPanel() {
               </span>
             </div>
 
+            <button
+              type="button"
+              onClick={() => setSectionLibraryOpen(true)}
+              className="mt-3 w-full rounded-lg bg-foreground px-3 py-2 text-xs font-medium text-background"
+            >
+              Add Section
+            </button>
+
             {!orderedSections.length ? (
               <p className="mt-4 rounded-lg border border-dashed border-border p-3 text-xs leading-5 opacity-60">
                 This page has no sections yet.
@@ -736,6 +838,70 @@ export default function PlatformVisualEditorPanel() {
           )}
         </aside>
       </div>
+      {sectionLibraryOpen && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-5"
+          onClick={() => setSectionLibraryOpen(false)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="section-library-title"
+            className="max-h-[85vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-background p-6 shadow-2xl"
+            onClick={event => event.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-5">
+              <div>
+                <p className="text-xs uppercase tracking-[0.2em] opacity-50">
+                  Section Library
+                </p>
+
+                <h2
+                  id="section-library-title"
+                  className="mt-2 text-2xl font-semibold"
+                >
+                  Add a section
+                </h2>
+
+                <p className="mt-2 text-sm opacity-65">
+                  Choose a reusable section to add to {selectedPage.title}.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setSectionLibraryOpen(false)}
+                className="rounded-lg border border-border px-3 py-2 text-sm"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {sectionLibrary.map(item => (
+                <button
+                  key={item.type}
+                  type="button"
+                  onClick={() => addSectionFromLibrary(item.type)}
+                  className="rounded-xl border border-border p-5 text-left transition hover:border-foreground hover:bg-muted"
+                >
+                  <span className="block text-base font-semibold">
+                    {item.title}
+                  </span>
+
+                  <span className="mt-2 block text-sm leading-6 opacity-65">
+                    {item.description}
+                  </span>
+
+                  <span className="mt-5 block text-[10px] font-semibold uppercase tracking-[0.18em] opacity-45">
+                    {item.type}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
