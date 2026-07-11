@@ -102,6 +102,8 @@ export default function PlatformVisualEditorPanel() {
         <label key={field} className="flex items-center justify-between gap-4">
           <span className="text-sm font-medium">{toLabel(field)}</span>
           <input
+            id={`section-field-${field}`}
+            name={field}
             type="checkbox"
             checked={value}
             onChange={event =>
@@ -120,6 +122,8 @@ export default function PlatformVisualEditorPanel() {
             {toLabel(field)}
           </span>
           <input
+            id={`section-field-${field}`}
+            name={field}
             type="number"
             value={value}
             onChange={event =>
@@ -146,6 +150,8 @@ export default function PlatformVisualEditorPanel() {
 
           {isLongText ? (
             <textarea
+              id={`section-field-${field}`}
+              name={field}
               rows={5}
               value={value}
               onChange={event =>
@@ -155,6 +161,8 @@ export default function PlatformVisualEditorPanel() {
             />
           ) : (
             <input
+              id={`section-field-${field}`}
+              name={field}
               type="text"
               value={value}
               onChange={event =>
@@ -199,6 +207,9 @@ export default function PlatformVisualEditorPanel() {
         </div>
 
         <select
+          id="visual-editor-page"
+          name="visualEditorPage"
+          aria-label="Select page to edit"
           value={selectedPage.id}
           onChange={event => {
             setSelectedPageId(event.target.value);
@@ -262,6 +273,8 @@ export default function PlatformVisualEditorPanel() {
                 <label className="flex items-center justify-between gap-4">
                   <span className="text-sm font-medium">Visible</span>
                   <input
+                    id="section-visible"
+                    name="sectionVisible"
                     type="checkbox"
                     checked={selectedSection.visible !== false}
                     onChange={event =>
@@ -276,6 +289,8 @@ export default function PlatformVisualEditorPanel() {
                     Sort Order
                   </span>
                   <input
+                    id="section-sort-order"
+                    name="sectionSortOrder"
                     type="number"
                     value={selectedSection.sortOrder}
                     onChange={event =>
@@ -292,6 +307,8 @@ export default function PlatformVisualEditorPanel() {
                     Variant
                   </span>
                   <input
+                    id="section-variant"
+                    name="sectionVariant"
                     type="text"
                     value={selectedSection.variant || ""}
                     onChange={event =>
