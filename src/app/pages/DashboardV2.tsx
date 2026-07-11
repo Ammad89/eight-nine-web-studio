@@ -308,6 +308,7 @@ export default function DashboardV2() {
 
   return (
     <CmsShell
+      focusMode={activeTab === "visual"}
       sidebar={
         <div>
           <PagesPanel

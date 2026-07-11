@@ -4,26 +4,38 @@ interface CmsShellProps {
   sidebar: ReactNode;
   editor: ReactNode;
   preview: ReactNode;
+  focusMode?: boolean;
 }
 
 export default function CmsShell({
   sidebar,
   editor,
   preview,
+  focusMode = false,
 }: CmsShellProps) {
   return (
-    <div className="h-screen flex overflow-hidden bg-background text-foreground">
-      <aside className="w-72 border-r border-border overflow-y-auto">
-        {sidebar}
-      </aside>
+    <div className="flex h-screen overflow-hidden bg-background text-foreground">
+      {!focusMode && (
+        <aside className="w-72 shrink-0 overflow-y-auto border-r border-border">
+          {sidebar}
+        </aside>
+      )}
 
-      <main className="flex-1 border-r border-border overflow-y-auto">
+      <main
+        className={
+          focusMode
+            ? "min-w-0 flex-1 overflow-y-auto"
+            : "min-w-0 flex-1 overflow-y-auto border-r border-border"
+        }
+      >
         {editor}
       </main>
 
-      <section className="w-[45%] overflow-y-auto bg-white">
-        {preview}
-      </section>
+      {!focusMode && (
+        <section className="w-[45%] shrink-0 overflow-y-auto bg-white">
+          {preview}
+        </section>
+      )}
     </div>
   );
 }
