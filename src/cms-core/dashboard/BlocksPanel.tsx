@@ -37,6 +37,9 @@ export default function BlocksPanel({
         </span>
 
         <select
+          id="cms-add-block-type"
+          name="cmsAddBlockType"
+          aria-label="Choose block type"
           value=""
           onChange={(event) => {
             const value = event.target.value as CmsBlockType;
