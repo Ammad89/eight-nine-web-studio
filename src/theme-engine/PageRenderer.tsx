@@ -5,6 +5,11 @@ interface PageRendererProps {
   page: PageDefinition;
   selectedSectionId?: string;
   onSelectSection?: (section: PageSection) => void;
+  onUpdateSectionData?: (
+    sectionId: string,
+    field: string,
+    value: unknown,
+  ) => void;
   editorMode?: boolean;
 }
 
@@ -12,6 +17,7 @@ export default function PageRenderer({
   page,
   selectedSectionId,
   onSelectSection,
+  onUpdateSectionData,
   editorMode = false,
 }: PageRendererProps) {
   const visibleSections = page.sections
@@ -51,6 +57,15 @@ export default function PageRenderer({
             />
           );
         }
+
+        const inlineFields = [
+          "eyebrow",
+          "title",
+          "subtitle",
+          "content",
+        ].filter(
+          field => typeof section.data[field] === "string",
+        );
 
         return (
           <div

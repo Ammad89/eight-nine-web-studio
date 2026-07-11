@@ -237,6 +237,16 @@ export default function PlatformVisualEditorPanel() {
   function updateSectionData(field: string, value: unknown) {
     if (!selectedPage || !selectedSection) return;
 
+    updateSectionDataById(selectedSection.id, field, value);
+  }
+
+  function updateSectionDataById(
+    sectionId: string,
+    field: string,
+    value: unknown,
+  ) {
+    if (!selectedPage) return;
+
     setWebsite(current => ({
       ...current,
       pages: current.pages.map(page =>
@@ -245,7 +255,7 @@ export default function PlatformVisualEditorPanel() {
           : {
               ...page,
               sections: page.sections.map(section =>
-                section.id !== selectedSection.id
+                section.id !== sectionId
                   ? section
                   : {
                       ...section,
@@ -856,6 +866,7 @@ export default function PlatformVisualEditorPanel() {
               editorMode
               selectedSectionId={selectedSectionId}
               onSelectSection={selectSection}
+              onUpdateSectionData={updateSectionDataById}
             />
           </div>
         </div>
