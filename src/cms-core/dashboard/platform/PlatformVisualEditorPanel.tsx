@@ -20,6 +20,8 @@ export default function PlatformVisualEditorPanel() {
   const firstPageId = website.pages[0]?.id || "";
   const [selectedPageId, setSelectedPageId] = useState(firstPageId);
   const [selectedSectionId, setSelectedSectionId] = useState("");
+  const [draggedSectionId, setDraggedSectionId] = useState("");
+  const [dragOverSectionId, setDragOverSectionId] = useState("");
 
   const selectedPage = useMemo(
     () =>
@@ -102,6 +104,62 @@ export default function PlatformVisualEditorPanel() {
         updatedAt: new Date().toISOString(),
       },
     }));
+  }
+
+  function reorderSections(
+    draggedId: string,
+    targetId: string,
+  ) {
+    if (
+      !selectedPage ||
+      !draggedId ||
+      !targetId ||
+      draggedId === targetId
+    ) {
+      return;
+    }
+
+    const currentSections = [...selectedPage.sections].sort(
+      (a, b) => a.sortOrder - b.sortOrder,
+    );
+
+    const draggedIndex = currentSections.findIndex(
+      section => section.id === draggedId,
+    );
+
+    const targetIndex = currentSections.findIndex(
+      section => section.id === targetId,
+    );
+
+    if (draggedIndex < 0 || targetIndex < 0) return;
+
+    const nextSections = [...currentSections];
+    const [draggedSection] = nextSections.splice(draggedIndex, 1);
+
+    nextSections.splice(targetIndex, 0, draggedSection);
+
+    const reorderedSections = nextSections.map((section, index) => ({
+      ...section,
+      sortOrder: index + 1,
+    }));
+
+    setWebsite(current => ({
+      ...current,
+      pages: current.pages.map(page =>
+        page.id === selectedPage.id
+          ? {
+              ...page,
+              sections: reorderedSections,
+            }
+          : page,
+      ),
+      publishing: {
+        ...current.publishing,
+        updatedAt: new Date().toISOString(),
+      },
+    }));
+
+    setSelectedSectionId(draggedId);
   }
 
   function moveSelectedSection(direction: "up" | "down") {
@@ -440,14 +498,60 @@ export default function PlatformVisualEditorPanel() {
                     <button
                       key={section.id}
                       type="button"
+                      draggable
                       onClick={() => setSelectedSectionId(section.id)}
-                      className={`flex w-full items-center gap-3 rounded-lg border px-3 py-2 text-left transition ${
+                      onDragStart={event => {
+                        setDraggedSectionId(section.id);
+                        setSelectedSectionId(section.id);
+                        event.dataTransfer.effectAllowed = "move";
+                        event.dataTransfer.setData(
+                          "text/plain",
+                          section.id,
+                        );
+                      }}
+                      onDragEnter={() => {
+                        if (draggedSectionId !== section.id) {
+                          setDragOverSectionId(section.id);
+                        }
+                      }}
+                      onDragOver={event => {
+                        event.preventDefault();
+                        event.dataTransfer.dropEffect = "move";
+                      }}
+                      onDrop={event => {
+                        event.preventDefault();
+
+                        const sourceId =
+                          event.dataTransfer.getData("text/plain") ||
+                          draggedSectionId;
+
+                        reorderSections(sourceId, section.id);
+                        setDraggedSectionId("");
+                        setDragOverSectionId("");
+                      }}
+                      onDragEnd={() => {
+                        setDraggedSectionId("");
+                        setDragOverSectionId("");
+                      }}
+                      className={`flex w-full cursor-grab items-center gap-3 rounded-lg border px-3 py-2 text-left transition active:cursor-grabbing ${
                         isActive
                           ? "border-foreground bg-muted"
                           : "border-transparent hover:border-border hover:bg-muted/60"
+                      } ${
+                        draggedSectionId === section.id
+                          ? "opacity-40"
+                          : ""
+                      } ${
+                        dragOverSectionId === section.id &&
+                        draggedSectionId !== section.id
+                          ? "border-blue-500 bg-blue-50"
+                          : ""
                       }`}
                     >
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-border text-[10px] font-semibold">
+                      <span
+                        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-border text-[10px] font-semibold"
+                        title="Drag to reorder"
+                      >
                         {index + 1}
                       </span>
 
