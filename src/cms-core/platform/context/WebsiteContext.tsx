@@ -15,6 +15,35 @@ const WebsiteContext = createContext<WebsiteContextValue | null>(null);
 
 const WEBSITE_STORAGE_KEY = "eight-nine-web-studio.website-schema";
 
+function normalizeWebsiteSchema(website: WebsiteSchema): WebsiteSchema {
+  return {
+    ...website,
+    pages: (website.pages || []).map(page => ({
+      ...page,
+      sections: (page.sections || []).map((section, index) => {
+        const legacySection = section as typeof section & {
+          order?: number;
+          hidden?: boolean;
+        };
+
+        return {
+          ...section,
+          visible:
+            typeof section.visible === "boolean"
+              ? section.visible
+              : legacySection.hidden !== true,
+          sortOrder:
+            typeof section.sortOrder === "number"
+              ? section.sortOrder
+              : typeof legacySection.order === "number"
+                ? legacySection.order
+                : index + 1,
+        };
+      }),
+    })),
+  };
+}
+
 function loadStoredWebsite() {
   if (typeof window === "undefined") return null;
 
@@ -22,7 +51,7 @@ function loadStoredWebsite() {
     const raw = window.localStorage.getItem(WEBSITE_STORAGE_KEY);
     if (!raw) return null;
 
-    return JSON.parse(raw) as WebsiteSchema;
+    return normalizeWebsiteSchema(JSON.parse(raw) as WebsiteSchema);
   } catch (error) {
     console.warn("Unable to load stored website schema.", error);
     return null;
@@ -48,7 +77,7 @@ async function loadRemotePublishedWebsite() {
   try {
     const remote = await loadRemoteSnapshot("platform-published");
     if (!remote || !isPlatformSnapshot(remote.snapshot)) return null;
-    return remote.snapshot.website;
+    return normalizeWebsiteSchema(remote.snapshot.website);
   } catch (error) {
     console.warn("Unable to load remote platform website schema.", error);
     return null;
@@ -57,11 +86,11 @@ async function loadRemotePublishedWebsite() {
 
 function loadLocalPublishedWebsite() {
   const published = loadPlatformPublishedSnapshot();
-  return published?.website || null;
+  return published?.website ? normalizeWebsiteSchema(published.website) : null;
 }
 
 export function WebsiteProvider({ children }: { children: ReactNode }) {
-  const defaultWebsite = useMemo(() => createDefaultWebsiteSchema(), []);
+  const defaultWebsite = useMemo(() => normalizeWebsiteSchema(createDefaultWebsiteSchema()), []);
   const [website, setWebsite] = useState<WebsiteSchema>(() => loadLocalPublishedWebsite() || loadStoredWebsite() || defaultWebsite);
 
   useEffect(() => {
@@ -87,7 +116,7 @@ export function WebsiteProvider({ children }: { children: ReactNode }) {
       website,
       setWebsite,
       resetWebsite: () => {
-        const nextWebsite = createDefaultWebsiteSchema();
+        const nextWebsite = normalizeWebsiteSchema(createDefaultWebsiteSchema());
         setWebsite(nextWebsite);
         saveStoredWebsite(nextWebsite);
       },
