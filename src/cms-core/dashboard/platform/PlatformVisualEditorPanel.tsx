@@ -9,51 +9,157 @@ import type {
 } from "../../platform";
 import PageRenderer from "../../../theme-engine/PageRenderer";
 
-const sectionLibrary: Array<{
+type SectionLibraryCategory =
+  | "all"
+  | "hero"
+  | "content"
+  | "collections"
+  | "conversion";
+
+type SectionInsertPosition = "end" | "above" | "below";
+
+interface SectionLibraryItem {
   type: SectionType;
   title: string;
   description: string;
-}> = [
+  category: Exclude<SectionLibraryCategory, "all">;
+  variant: string;
+  data?: Record<string, unknown>;
+}
+
+const sectionLibrary: SectionLibraryItem[] = [
   {
     type: "hero",
-    title: "Hero",
-    description: "Large headline, supporting copy and calls to action.",
+    title: "Hero Centered",
+    description: "Centered headline, supporting copy and two calls to action.",
+    category: "hero",
+    variant: "centered",
+    data: {
+      align: "center",
+    },
+  },
+  {
+    type: "hero",
+    title: "Hero Left Aligned",
+    description: "A classic editorial hero with content aligned to the left.",
+    category: "hero",
+    variant: "left",
+    data: {
+      align: "left",
+    },
+  },
+  {
+    type: "hero",
+    title: "Hero Image Split",
+    description: "Hero content paired with a strong visual treatment.",
+    category: "hero",
+    variant: "split",
+    data: {
+      align: "left",
+      image: "family-hero",
+      imageAlt: "Hero image",
+    },
   },
   {
     type: "text",
-    title: "Text",
-    description: "Editorial copy, introductions and supporting content.",
+    title: "Editorial Text",
+    description: "Long-form introductions, explanations and supporting copy.",
+    category: "content",
+    variant: "editorial",
   },
   {
     type: "imageText",
-    title: "Image and Text",
-    description: "A balanced visual and content split section.",
+    title: "Image Right",
+    description: "Content on the left with an image positioned on the right.",
+    category: "content",
+    variant: "image-right",
+    data: {
+      imagePosition: "right",
+    },
+  },
+  {
+    type: "imageText",
+    title: "Image Left",
+    description: "Image on the left with supporting content on the right.",
+    category: "content",
+    variant: "image-left",
+    data: {
+      imagePosition: "left",
+    },
   },
   {
     type: "servicesGrid",
     title: "Services Grid",
-    description: "Display services from the website collection.",
+    description: "Display services from the website service collection.",
+    category: "collections",
+    variant: "grid",
+    data: {
+      layout: "grid",
+    },
   },
   {
     type: "portfolioGrid",
     title: "Portfolio Grid",
-    description: "Show selected portfolio or project entries.",
+    description: "Show selected portfolio entries in a responsive grid.",
+    category: "collections",
+    variant: "grid",
+    data: {
+      layout: "grid",
+    },
   },
   {
     type: "testimonials",
     title: "Testimonials",
-    description: "Feature selected client reviews and quotes.",
+    description: "Display featured client reviews and quotations.",
+    category: "collections",
+    variant: "quotes",
+    data: {
+      layout: "quotes",
+    },
   },
   {
     type: "faq",
-    title: "FAQ",
-    description: "Present common questions and useful answers.",
+    title: "FAQ Cards",
+    description: "Show common questions and answers in a card layout.",
+    category: "collections",
+    variant: "cards",
+    data: {
+      layout: "cards",
+    },
   },
   {
     type: "cta",
-    title: "Call to Action",
-    description: "Drive visitors toward the next important action.",
+    title: "Dark Call to Action",
+    description: "A high-contrast conversion section for enquiries and bookings.",
+    category: "conversion",
+    variant: "dark",
+    data: {
+      tone: "dark",
+      align: "center",
+    },
   },
+  {
+    type: "cta",
+    title: "Light Call to Action",
+    description: "A softer conversion section for secondary actions.",
+    category: "conversion",
+    variant: "light",
+    data: {
+      tone: "light",
+      align: "center",
+    },
+  },
+];
+
+const sectionLibraryCategories: Array<{
+  id: SectionLibraryCategory;
+  label: string;
+}> = [
+  { id: "all", label: "All" },
+  { id: "hero", label: "Hero" },
+  { id: "content", label: "Content" },
+  { id: "collections", label: "Collections" },
+  { id: "conversion", label: "Conversion" },
 ];
 
 function fieldClass() {
@@ -76,6 +182,11 @@ export default function PlatformVisualEditorPanel() {
   const [draggedSectionId, setDraggedSectionId] = useState("");
   const [dragOverSectionId, setDragOverSectionId] = useState("");
   const [sectionLibraryOpen, setSectionLibraryOpen] = useState(false);
+  const [sectionLibrarySearch, setSectionLibrarySearch] = useState("");
+  const [sectionLibraryCategory, setSectionLibraryCategory] =
+    useState<SectionLibraryCategory>("all");
+  const [sectionInsertPosition, setSectionInsertPosition] =
+    useState<SectionInsertPosition>("end");
 
   const selectedPage = useMemo(
     () =>
@@ -99,6 +210,25 @@ export default function PlatformVisualEditorPanel() {
       ),
     [selectedPage],
   );
+
+  const filteredSectionLibrary = useMemo(() => {
+    const query = sectionLibrarySearch.trim().toLowerCase();
+
+    return sectionLibrary.filter(item => {
+      const categoryMatches =
+        sectionLibraryCategory === "all" ||
+        item.category === sectionLibraryCategory;
+
+      const searchMatches =
+        !query ||
+        item.title.toLowerCase().includes(query) ||
+        item.description.toLowerCase().includes(query) ||
+        item.type.toLowerCase().includes(query) ||
+        item.variant.toLowerCase().includes(query);
+
+      return categoryMatches && searchMatches;
+    });
+  }, [sectionLibraryCategory, sectionLibrarySearch]);
 
   function selectSection(section: PageSection) {
     setSelectedSectionId(section.id);
@@ -160,25 +290,56 @@ export default function PlatformVisualEditorPanel() {
     }));
   }
 
-  function addSectionFromLibrary(type: SectionType) {
+  function addSectionFromLibrary(
+    item: SectionLibraryItem,
+  ) {
     if (!selectedPage) return;
 
-    const nextId = `section-${type}-${Date.now()}`;
-    const nextOrder =
-      selectedPage.sections.reduce(
-        (highest, section) =>
-          Math.max(highest, section.sortOrder),
-        0,
-      ) + 1;
+    const nextId = `section-${item.type}-${Date.now()}`;
 
     const nextSection: PageSection = {
       id: nextId,
-      type,
-      variant: "default",
+      type: item.type,
+      variant: item.variant,
       visible: true,
-      sortOrder: nextOrder,
-      data: getDefaultSectionData(type),
+      sortOrder: 1,
+      data: {
+        ...getDefaultSectionData(item.type),
+        ...(item.data || {}),
+      },
     };
+
+    const currentSections = [...selectedPage.sections].sort(
+      (a, b) => a.sortOrder - b.sortOrder,
+    );
+
+    let insertIndex = currentSections.length;
+
+    if (
+      selectedSection &&
+      sectionInsertPosition !== "end"
+    ) {
+      const selectedIndex = currentSections.findIndex(
+        section => section.id === selectedSection.id,
+      );
+
+      if (selectedIndex >= 0) {
+        insertIndex =
+          sectionInsertPosition === "above"
+            ? selectedIndex
+            : selectedIndex + 1;
+      }
+    }
+
+    const nextSections = [...currentSections];
+    nextSections.splice(insertIndex, 0, nextSection);
+
+    const normalizedSections = nextSections.map(
+      (section, index) => ({
+        ...section,
+        sortOrder: index + 1,
+      }),
+    );
 
     setWebsite(current => ({
       ...current,
@@ -186,7 +347,7 @@ export default function PlatformVisualEditorPanel() {
         page.id === selectedPage.id
           ? {
               ...page,
-              sections: [...page.sections, nextSection],
+              sections: normalizedSections,
             }
           : page,
       ),
@@ -198,6 +359,8 @@ export default function PlatformVisualEditorPanel() {
 
     setSelectedSectionId(nextId);
     setSectionLibraryOpen(false);
+    setSectionLibrarySearch("");
+    setSectionLibraryCategory("all");
   }
 
   function reorderSections(
@@ -847,10 +1010,10 @@ export default function PlatformVisualEditorPanel() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="section-library-title"
-            className="max-h-[85vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-background p-6 shadow-2xl"
+            className="max-h-[90vh] w-full max-w-5xl overflow-y-auto rounded-2xl bg-background p-6 shadow-2xl"
             onClick={event => event.stopPropagation()}
           >
-            <div className="flex items-start justify-between gap-5">
+            <div className="flex flex-col gap-5 border-b border-border pb-5 lg:flex-row lg:items-start lg:justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] opacity-50">
                   Section Library
@@ -864,41 +1027,137 @@ export default function PlatformVisualEditorPanel() {
                 </h2>
 
                 <p className="mt-2 text-sm opacity-65">
-                  Choose a reusable section to add to {selectedPage.title}.
+                  Choose a section for {selectedPage.title}.
                 </p>
               </div>
 
               <button
                 type="button"
                 onClick={() => setSectionLibraryOpen(false)}
-                className="rounded-lg border border-border px-3 py-2 text-sm"
+                className="self-start rounded-lg border border-border px-3 py-2 text-sm"
               >
                 Close
               </button>
             </div>
 
-            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {sectionLibrary.map(item => (
-                <button
-                  key={item.type}
-                  type="button"
-                  onClick={() => addSectionFromLibrary(item.type)}
-                  className="rounded-xl border border-border p-5 text-left transition hover:border-foreground hover:bg-muted"
+            <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px]">
+              <label className="block">
+                <span className="mb-2 block text-xs font-medium uppercase tracking-[0.14em] opacity-60">
+                  Search
+                </span>
+
+                <input
+                  id="section-library-search"
+                  name="sectionLibrarySearch"
+                  type="search"
+                  value={sectionLibrarySearch}
+                  onChange={event =>
+                    setSectionLibrarySearch(event.target.value)
+                  }
+                  placeholder="Search sections and variants"
+                  className={fieldClass()}
+                  autoFocus
+                />
+              </label>
+
+              <label className="block">
+                <span className="mb-2 block text-xs font-medium uppercase tracking-[0.14em] opacity-60">
+                  Insert position
+                </span>
+
+                <select
+                  id="section-insert-position"
+                  name="sectionInsertPosition"
+                  value={sectionInsertPosition}
+                  onChange={event =>
+                    setSectionInsertPosition(
+                      event.target.value as SectionInsertPosition,
+                    )
+                  }
+                  className={fieldClass()}
                 >
-                  <span className="block text-base font-semibold">
-                    {item.title}
-                  </span>
+                  <option value="end">End of page</option>
+                  <option
+                    value="above"
+                    disabled={!selectedSection}
+                  >
+                    Above selected section
+                  </option>
+                  <option
+                    value="below"
+                    disabled={!selectedSection}
+                  >
+                    Below selected section
+                  </option>
+                </select>
+              </label>
+            </div>
 
-                  <span className="mt-2 block text-sm leading-6 opacity-65">
-                    {item.description}
-                  </span>
-
-                  <span className="mt-5 block text-[10px] font-semibold uppercase tracking-[0.18em] opacity-45">
-                    {item.type}
-                  </span>
+            <div className="mt-5 flex flex-wrap gap-2">
+              {sectionLibraryCategories.map(category => (
+                <button
+                  key={category.id}
+                  type="button"
+                  onClick={() =>
+                    setSectionLibraryCategory(category.id)
+                  }
+                  className={`rounded-full px-4 py-2 text-xs font-medium transition ${
+                    sectionLibraryCategory === category.id
+                      ? "bg-foreground text-background"
+                      : "border border-border hover:bg-muted"
+                  }`}
+                >
+                  {category.label}
                 </button>
               ))}
             </div>
+
+            {filteredSectionLibrary.length === 0 ? (
+              <div className="mt-8 rounded-xl border border-dashed border-border p-10 text-center">
+                <h3 className="text-base font-semibold">
+                  No sections found
+                </h3>
+
+                <p className="mt-2 text-sm opacity-60">
+                  Try a different search term or category.
+                </p>
+              </div>
+            ) : (
+              <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {filteredSectionLibrary.map(item => (
+                  <button
+                    key={`${item.type}-${item.variant}`}
+                    type="button"
+                    onClick={() => addSectionFromLibrary(item)}
+                    className="group rounded-xl border border-border p-5 text-left transition hover:border-foreground hover:bg-muted"
+                  >
+                    <div className="mb-5 flex aspect-[16/8] items-center justify-center rounded-lg border border-dashed border-border bg-muted/40">
+                      <span className="text-xs font-semibold uppercase tracking-[0.18em] opacity-40">
+                        {item.variant}
+                      </span>
+                    </div>
+
+                    <span className="block text-base font-semibold">
+                      {item.title}
+                    </span>
+
+                    <span className="mt-2 block text-sm leading-6 opacity-65">
+                      {item.description}
+                    </span>
+
+                    <div className="mt-5 flex items-center justify-between gap-3">
+                      <span className="text-[10px] font-semibold uppercase tracking-[0.18em] opacity-45">
+                        {item.category}
+                      </span>
+
+                      <span className="text-[10px] font-semibold uppercase tracking-[0.18em] opacity-45 group-hover:opacity-80">
+                        Add section
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
