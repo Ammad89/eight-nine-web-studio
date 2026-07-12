@@ -71,6 +71,17 @@ export default function PageRenderer({
               onSelectSection?.(section);
             }}
             onKeyDown={event => {
+              const target = event.target as HTMLElement;
+
+              const isEditing =
+                target.isContentEditable ||
+                target.closest("[contenteditable='true']") !== null ||
+                target.tagName === "INPUT" ||
+                target.tagName === "TEXTAREA" ||
+                target.tagName === "SELECT";
+
+              if (isEditing) return;
+
               if (event.key === "Enter" || event.key === " ") {
                 event.preventDefault();
                 onSelectSection?.(section);
