@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 import { ArrowRight } from "lucide-react";
 import { resolveThemeAsset } from "../";
+import EditableText from "./EditableText";
 
 export interface HeroSectionData {
   eyebrow?: string;
@@ -15,80 +16,135 @@ export interface HeroSectionData {
   align?: "left" | "center";
 }
 
-function renderLines(value: string) {
-  return value.split("\n").map((line, index, lines) => (
-    <span key={`${line}-${index}`}>
-      {line}
-      {index < lines.length - 1 && <br />}
-    </span>
-  ));
+interface RendererProps {
+  data: unknown;
+  editable?: boolean;
+  onEditStart?: () => void;
+  onUpdateField?: (field: string, value: unknown) => void;
 }
 
 function isHeroSectionData(value: unknown): value is HeroSectionData {
   return Boolean(value && typeof value === "object");
 }
 
-export default function HeroSectionRenderer({ data }: { data: unknown }) {
+export default function HeroSectionRenderer({
+  data,
+  editable = false,
+  onEditStart,
+  onUpdateField,
+}: RendererProps) {
   if (!isHeroSectionData(data)) return null;
 
   const alignment = data.align || "center";
   const imageSrc = data.image ? resolveThemeAsset(data.image) : "";
 
   return (
-    <section className="relative min-h-[78vh] bg-background pt-[72px] overflow-hidden">
+    <section className="relative min-h-[78vh] overflow-hidden bg-background pt-[72px]">
       {imageSrc && (
         <div className="absolute inset-0">
           <img
             src={imageSrc}
             alt={data.imageAlt || data.title || "Hero image"}
-            className="w-full h-full object-cover"
+            className="h-full w-full object-cover"
           />
           <div className="absolute inset-0 bg-black/45" />
         </div>
       )}
 
       <div
-        className={`relative z-10 max-w-7xl mx-auto px-6 py-24 min-h-[78vh] flex items-center ${
-          alignment === "center" ? "justify-center text-center" : "justify-start text-left"
+        className={`relative z-10 mx-auto flex min-h-[78vh] max-w-7xl items-center px-6 py-24 ${
+          alignment === "center"
+            ? "justify-center text-center"
+            : "justify-start text-left"
         }`}
       >
-        <div className={alignment === "center" ? "max-w-3xl mx-auto" : "max-w-2xl"}>
-          {data.eyebrow && (
-            <p className={`text-[10px] tracking-[0.35em] uppercase mb-5 font-medium ${
-              imageSrc ? "text-white/70" : "text-muted-foreground"
-            }`}>
-              {data.eyebrow}
-            </p>
+        <div
+          className={
+            alignment === "center"
+              ? "mx-auto max-w-3xl"
+              : "max-w-2xl"
+          }
+        >
+          {(data.eyebrow || editable) && (
+            <EditableText
+              as="p"
+              value={data.eyebrow || "Eyebrow text"}
+              editable={editable}
+              onEditStart={onEditStart}
+              onCommit={value =>
+                onUpdateField?.("eyebrow", value)
+              }
+              className={`mb-5 text-[10px] font-medium uppercase tracking-[0.35em] ${
+                imageSrc
+                  ? "text-white/70"
+                  : "text-muted-foreground"
+              }`}
+            />
           )}
 
-          {data.title && (
-            <h1
-              className={`text-4xl sm:text-6xl font-medium mb-6 leading-tight ${
+          {(data.title || editable) && (
+            <EditableText
+              as="h1"
+              value={data.title || "Hero title"}
+              editable={editable}
+              multiline
+              onEditStart={onEditStart}
+              onCommit={value =>
+                onUpdateField?.("title", value)
+              }
+              className={`mb-6 text-4xl font-medium leading-tight sm:text-6xl ${
                 imageSrc ? "text-white" : "text-foreground"
               }`}
               style={{ fontFamily: "'Lora', Georgia, serif" }}
-            >
-              {renderLines(data.title)}
-            </h1>
+            />
           )}
 
-          {data.subtitle && (
-            <p className={`text-base sm:text-lg leading-relaxed mb-9 ${
-              imageSrc ? "text-white/75" : "text-muted-foreground"
-            }`}>
-              {data.subtitle}
-            </p>
+          {(data.subtitle || editable) && (
+            <EditableText
+              as="p"
+              value={data.subtitle || "Hero subtitle"}
+              editable={editable}
+              multiline
+              onEditStart={onEditStart}
+              onCommit={value =>
+                onUpdateField?.("subtitle", value)
+              }
+              className={`mb-9 text-base leading-relaxed sm:text-lg ${
+                imageSrc
+                  ? "text-white/75"
+                  : "text-muted-foreground"
+              }`}
+            />
           )}
 
           {(data.primaryCtaLabel || data.secondaryCtaLabel) && (
-            <div className={`flex flex-wrap gap-3 ${alignment === "center" ? "justify-center" : "justify-start"}`}>
+            <div
+              className={`flex flex-wrap gap-3 ${
+                alignment === "center"
+                  ? "justify-center"
+                  : "justify-start"
+              }`}
+            >
               {data.primaryCtaLabel && data.primaryCtaHref && (
                 <Link
-                  to={data.primaryCtaHref}
-                  className="group inline-flex items-center gap-[18px] h-11 pl-6 pr-3.5 bg-primary text-primary-foreground text-xs tracking-[0.12em] uppercase font-medium rounded-full hover:opacity-80 transition-opacity duration-500"
+                  to={editable ? "#" : data.primaryCtaHref}
+                  onClick={event => {
+                    if (editable) event.preventDefault();
+                  }}
+                  className="group inline-flex h-11 items-center gap-[18px] rounded-full bg-primary pl-6 pr-3.5 text-xs font-medium uppercase tracking-[0.12em] text-primary-foreground transition-opacity duration-500 hover:opacity-80"
                 >
-                  <span className="group-hover:[order:1]">{data.primaryCtaLabel}</span>
-                  <span className="group-hover:[order:0] flex items-center justify-center w-5 h-5">
+                  <EditableText
+                    as="span"
+                    value={data.primaryCtaLabel}
+                    editable={editable}
+                    onEditStart={onEditStart}
+                    onCommit={value =>
+                      onUpdateField?.("primaryCtaLabel", value)
+                    }
+                    className="group-hover:[order:1]"
+                  />
+
+                  <span className="group-hover:[order:0] flex h-5 w-5 items-center justify-center">
                     <ArrowRight size={14} />
                   </span>
                 </Link>
@@ -96,14 +152,25 @@ export default function HeroSectionRenderer({ data }: { data: unknown }) {
 
               {data.secondaryCtaLabel && data.secondaryCtaHref && (
                 <Link
-                  to={data.secondaryCtaHref}
-                  className={`inline-flex items-center h-11 px-6 rounded-full border text-xs tracking-[0.12em] uppercase font-medium transition-colors duration-500 ${
+                  to={editable ? "#" : data.secondaryCtaHref}
+                  onClick={event => {
+                    if (editable) event.preventDefault();
+                  }}
+                  className={`inline-flex h-11 items-center rounded-full border px-6 text-xs font-medium uppercase tracking-[0.12em] transition-colors duration-500 ${
                     imageSrc
                       ? "border-white/30 text-white hover:bg-white hover:text-foreground"
                       : "border-border text-foreground hover:bg-muted"
                   }`}
                 >
-                  {data.secondaryCtaLabel}
+                  <EditableText
+                    as="span"
+                    value={data.secondaryCtaLabel}
+                    editable={editable}
+                    onEditStart={onEditStart}
+                    onCommit={value =>
+                      onUpdateField?.("secondaryCtaLabel", value)
+                    }
+                  />
                 </Link>
               )}
             </div>

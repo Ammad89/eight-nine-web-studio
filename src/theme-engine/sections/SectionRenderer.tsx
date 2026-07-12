@@ -5,21 +5,59 @@ import CtaSectionRenderer from "./CtaSectionRenderer";
 import ImageTextSectionRenderer from "./ImageTextSectionRenderer";
 import CollectionSectionRenderer from "./CollectionSectionRenderer";
 
-export default function SectionRenderer({ section }: { section: PageSection }) {
+interface SectionRendererProps {
+  section: PageSection;
+  editable?: boolean;
+  onEditStart?: () => void;
+  onUpdateField?: (field: string, value: unknown) => void;
+}
+
+export default function SectionRenderer({
+  section,
+  editable = false,
+  onEditStart,
+  onUpdateField,
+}: SectionRendererProps) {
   if (!section.visible) return null;
+
+  const editorProps = {
+    editable,
+    onEditStart,
+    onUpdateField,
+  };
 
   switch (section.type) {
     case "hero":
-      return <HeroSectionRenderer data={section.data} />;
+      return (
+        <HeroSectionRenderer
+          data={section.data}
+          {...editorProps}
+        />
+      );
 
     case "text":
-      return <TextSectionRenderer data={section.data} />;
+      return (
+        <TextSectionRenderer
+          data={section.data}
+          {...editorProps}
+        />
+      );
 
     case "cta":
-      return <CtaSectionRenderer data={section.data} />;
+      return (
+        <CtaSectionRenderer
+          data={section.data}
+          {...editorProps}
+        />
+      );
 
     case "imageText":
-      return <ImageTextSectionRenderer data={section.data} />;
+      return (
+        <ImageTextSectionRenderer
+          data={section.data}
+          {...editorProps}
+        />
+      );
 
     case "servicesGrid":
     case "portfolioGrid":
@@ -29,15 +67,17 @@ export default function SectionRenderer({ section }: { section: PageSection }) {
 
     default:
       return (
-        <section className="py-16 bg-background">
-          <div className="max-w-7xl mx-auto px-6">
+        <section className="bg-background py-16">
+          <div className="mx-auto max-w-7xl px-6">
             <div className="rounded-2xl border border-border p-6">
               <p className="text-xs uppercase tracking-[0.2em] opacity-60">
                 Unsupported section
               </p>
+
               <h2 className="mt-2 text-xl font-semibold">
                 {section.type}
               </h2>
+
               <p className="mt-2 text-sm opacity-70">
                 This section type has not been connected to a renderer yet.
               </p>

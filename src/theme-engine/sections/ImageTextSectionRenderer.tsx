@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 import { ArrowRight } from "lucide-react";
 import { resolveThemeAsset } from "../";
+import EditableText from "./EditableText";
 
 export interface ImageTextSectionData {
   eyebrow?: string;
@@ -13,25 +14,32 @@ export interface ImageTextSectionData {
   ctaHref?: string;
 }
 
-function renderParagraphs(text?: string) {
-  if (!text) return null;
-
-  return text.split("\n\n").map((paragraph, index) => (
-    <p key={index} className="mb-5 last:mb-0 text-[15px] leading-8 text-muted-foreground">
-      {paragraph}
-    </p>
-  ));
+interface RendererProps {
+  data: unknown;
+  editable?: boolean;
+  onEditStart?: () => void;
+  onUpdateField?: (field: string, value: unknown) => void;
 }
 
-export default function ImageTextSectionRenderer({ data }: { data: unknown }) {
+export default function ImageTextSectionRenderer({
+  data,
+  editable = false,
+  onEditStart,
+  onUpdateField,
+}: RendererProps) {
   if (!data || typeof data !== "object") return null;
 
   const section = data as ImageTextSectionData;
-  const imageSrc = section.image ? resolveThemeAsset(section.image) : "";
+  const imageSrc = section.image
+    ? resolveThemeAsset(section.image)
+    : "";
   const imageFirst = section.imagePosition === "left";
 
   const imageBlock = (
-    <div className="overflow-hidden rounded-3xl bg-muted" style={{ aspectRatio: "4/5" }}>
+    <div
+      className="overflow-hidden rounded-3xl bg-muted"
+      style={{ aspectRatio: "4/5" }}
+    >
       {imageSrc ? (
         <img
           src={imageSrc}
@@ -48,29 +56,67 @@ export default function ImageTextSectionRenderer({ data }: { data: unknown }) {
 
   const textBlock = (
     <div>
-      {section.eyebrow && (
-        <p className="mb-5 text-[10px] font-medium uppercase tracking-[0.35em] text-muted-foreground">
-          {section.eyebrow}
-        </p>
+      {(section.eyebrow || editable) && (
+        <EditableText
+          as="p"
+          value={section.eyebrow || "Eyebrow text"}
+          editable={editable}
+          onEditStart={onEditStart}
+          onCommit={value =>
+            onUpdateField?.("eyebrow", value)
+          }
+          className="mb-5 text-[10px] font-medium uppercase tracking-[0.35em] text-muted-foreground"
+        />
       )}
 
-      {section.title && (
-        <h2
+      {(section.title || editable) && (
+        <EditableText
+          as="h2"
+          value={section.title || "Section title"}
+          editable={editable}
+          multiline
+          onEditStart={onEditStart}
+          onCommit={value =>
+            onUpdateField?.("title", value)
+          }
           className="mb-7 text-3xl font-medium leading-tight text-foreground sm:text-5xl"
           style={{ fontFamily: "'Lora', Georgia, serif" }}
-        >
-          {section.title}
-        </h2>
+        />
       )}
 
-      {renderParagraphs(section.content)}
+      {(section.content || editable) && (
+        <EditableText
+          as="p"
+          value={section.content || "Section content"}
+          editable={editable}
+          multiline
+          onEditStart={onEditStart}
+          onCommit={value =>
+            onUpdateField?.("content", value)
+          }
+          className="whitespace-pre-line text-[15px] leading-8 text-muted-foreground"
+        />
+      )}
 
       {section.ctaLabel && section.ctaHref && (
         <Link
-          to={section.ctaHref}
+          to={editable ? "#" : section.ctaHref}
+          onClick={event => {
+            if (editable) event.preventDefault();
+          }}
           className="group mt-8 inline-flex items-center gap-[18px] text-xs font-medium uppercase tracking-[0.12em] text-foreground"
         >
-          <span className="group-hover:[order:1]">{section.ctaLabel}</span>
+          <EditableText
+            as="span"
+            value={section.ctaLabel}
+            editable={editable}
+            onEditStart={onEditStart}
+            onCommit={value =>
+              onUpdateField?.("ctaLabel", value)
+            }
+            className="group-hover:[order:1]"
+          />
+
           <span className="group-hover:[order:0] flex items-center">
             <ArrowRight size={14} />
           </span>

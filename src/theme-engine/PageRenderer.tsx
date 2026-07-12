@@ -1,5 +1,8 @@
 import { SectionRenderer } from "./sections";
-import type { PageDefinition, PageSection } from "../cms-core/platform";
+import type {
+  PageDefinition,
+  PageSection,
+} from "../cms-core/platform";
 
 interface PageRendererProps {
   page: PageDefinition;
@@ -58,15 +61,6 @@ export default function PageRenderer({
           );
         }
 
-        const inlineFields = [
-          "eyebrow",
-          "title",
-          "subtitle",
-          "content",
-        ].filter(
-          field => typeof section.data[field] === "string",
-        );
-
         return (
           <div
             key={section.id}
@@ -98,80 +92,18 @@ export default function PageRenderer({
               {section.type}
             </div>
 
-            {isSelected && inlineFields.length > 0 && (
-              <div
-                className="relative z-50 border-b border-blue-200 bg-blue-50 p-3"
-                onClick={event => event.stopPropagation()}
-              >
-                <div className="mb-2 flex items-center justify-between gap-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-700">
-                    Inline Edit
-                  </p>
-
-                  <p className="text-[10px] text-blue-700/70">
-                    Changes update instantly
-                  </p>
-                </div>
-
-                <div className="grid gap-2 md:grid-cols-2">
-                  {inlineFields.map(field => {
-                    const value = String(section.data[field] || "");
-
-                    const isLongField =
-                      field === "content" ||
-                      field === "subtitle" ||
-                      value.length > 100;
-
-                    return (
-                      <label
-                        key={field}
-                        className={
-                          isLongField ? "md:col-span-2" : ""
-                        }
-                      >
-                        <span className="mb-1 block text-[10px] font-medium uppercase tracking-[0.12em] text-blue-800/70">
-                          {field}
-                        </span>
-
-                        {isLongField ? (
-                          <textarea
-                            id={`inline-${section.id}-${field}`}
-                            name={`inline-${field}`}
-                            rows={3}
-                            value={value}
-                            onChange={event =>
-                              onUpdateSectionData?.(
-                                section.id,
-                                field,
-                                event.target.value,
-                              )
-                            }
-                            className="w-full rounded-md border border-blue-200 bg-white px-3 py-2 text-sm text-neutral-900 outline-none focus:border-blue-500"
-                          />
-                        ) : (
-                          <input
-                            id={`inline-${section.id}-${field}`}
-                            name={`inline-${field}`}
-                            type="text"
-                            value={value}
-                            onChange={event =>
-                              onUpdateSectionData?.(
-                                section.id,
-                                field,
-                                event.target.value,
-                              )
-                            }
-                            className="w-full rounded-md border border-blue-200 bg-white px-3 py-2 text-sm text-neutral-900 outline-none focus:border-blue-500"
-                          />
-                        )}
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            <SectionRenderer section={section} />
+            <SectionRenderer
+              section={section}
+              editable={editorMode}
+              onEditStart={() => onSelectSection?.(section)}
+              onUpdateField={(field, value) =>
+                onUpdateSectionData?.(
+                  section.id,
+                  field,
+                  value,
+                )
+              }
+            />
           </div>
         );
       })}
