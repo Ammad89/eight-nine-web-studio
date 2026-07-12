@@ -2,6 +2,7 @@ import { Link } from "react-router";
 import { ArrowRight } from "lucide-react";
 import { resolveThemeAsset } from "../";
 import EditableText from "./EditableText";
+import EditableImage from "./EditableImage";
 
 export interface ImageTextSectionData {
   eyebrow?: string;
@@ -40,17 +41,21 @@ export default function ImageTextSectionRenderer({
       className="overflow-hidden rounded-3xl bg-muted"
       style={{ aspectRatio: "4/5" }}
     >
-      {imageSrc ? (
-        <img
-          src={imageSrc}
-          alt={section.imageAlt || section.title || "Section image"}
-          className="h-full w-full object-cover"
-        />
-      ) : (
-        <div className="flex h-full w-full items-center justify-center text-sm text-muted-foreground">
-          No image selected
-        </div>
-      )}
+      <EditableImage
+        src={imageSrc}
+        alt={
+          section.imageAlt ||
+          section.title ||
+          "Section image"
+        }
+        editable={editable}
+        wrapperClassName="relative h-full w-full"
+        className="h-full w-full object-cover"
+        onEditStart={onEditStart}
+        onCommit={publicUrl =>
+          onUpdateField?.("image", publicUrl)
+        }
+      />
     </div>
   );
 

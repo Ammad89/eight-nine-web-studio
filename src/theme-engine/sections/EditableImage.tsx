@@ -1,0 +1,145 @@
+import {
+  useRef,
+  useState,
+  type ChangeEvent,
+  type MouseEvent,
+} from "react";
+import { uploadMediaFile } from "../../cms-core/media/media-storage";
+
+interface EditableImageProps {
+  src?: string;
+  alt?: string;
+  editable?: boolean;
+  className?: string;
+  wrapperClassName?: string;
+  loading?: "eager" | "lazy";
+  emptyLabel?: string;
+  onEditStart?: () => void;
+  onCommit?: (publicUrl: string) => void;
+}
+
+export default function EditableImage({
+  src = "",
+  alt = "",
+  editable = false,
+  className = "h-full w-full object-cover",
+  wrapperClassName = "relative h-full w-full overflow-hidden",
+  loading = "lazy",
+  emptyLabel = "No image selected",
+  onEditStart,
+  onCommit,
+}: EditableImageProps) {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
+
+  function openPicker(event: MouseEvent<HTMLButtonElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (!editable || uploading) return;
+
+    onEditStart?.();
+    inputRef.current?.click();
+  }
+
+  async function handleFileChange(
+    event: ChangeEvent<HTMLInputElement>,
+  ) {
+    const file = event.target.files?.[0];
+
+    event.target.value = "";
+
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setError("Please select an image file.");
+      return;
+    }
+
+    setUploading(true);
+    setError("");
+
+    try {
+      const uploaded = await uploadMediaFile(
+        file,
+        "visual-editor",
+      );
+
+      onCommit?.(uploaded.publicUrl);
+    } catch (uploadError) {
+      setError(
+        uploadError instanceof Error
+          ? uploadError.message
+          : "Unable to upload image.",
+      );
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  if (!editable) {
+    return src ? (
+      <img
+        src={src}
+        alt={alt}
+        loading={loading}
+        className={className}
+      />
+    ) : (
+      <div className="flex h-full w-full items-center justify-center bg-muted text-sm text-muted-foreground">
+        {emptyLabel}
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={`${wrapperClassName} group/editable-image`}
+      data-editable-image="true"
+    >
+      {src ? (
+        <img
+          src={src}
+          alt={alt}
+          loading={loading}
+          className={className}
+        />
+      ) : (
+        <div className="flex h-full w-full items-center justify-center bg-muted text-sm text-muted-foreground">
+          {emptyLabel}
+        </div>
+      )}
+
+      <button
+        type="button"
+        onClick={openPicker}
+        disabled={uploading}
+        aria-label={src ? "Replace image" : "Select image"}
+        className="absolute inset-0 z-30 flex cursor-pointer items-center justify-center bg-black/0 transition group-hover/editable-image:bg-black/40 focus:bg-black/40 focus:outline-none disabled:cursor-wait"
+      >
+        <span className="rounded-full bg-black/80 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-white opacity-0 shadow transition group-hover/editable-image:opacity-100 group-focus-within/editable-image:opacity-100">
+          {uploading
+            ? "Uploading..."
+            : src
+              ? "Replace Image"
+              : "Select Image"}
+        </span>
+      </button>
+
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFileChange}
+      />
+
+      {error && (
+        <div className="absolute bottom-3 left-3 right-3 z-40 rounded-lg bg-red-600 px-3 py-2 text-xs text-white shadow">
+          {error}
+        </div>
+      )}
+    </div>
+  );
+}

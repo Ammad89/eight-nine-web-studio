@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { useWebsite } from "../../cms-core/platform";
 import { resolveThemeAsset } from "../";
 import EditableText from "./EditableText";
+import EditableImage from "./EditableImage";
 
 type CollectionName =
   | "services"
@@ -242,14 +243,26 @@ export default function CollectionSectionRenderer({
                   className="group overflow-hidden rounded-3xl bg-muted"
                 >
                   <div className="aspect-[4/5] overflow-hidden">
-                    {imageSrc && (
-                      <img
-                        src={imageSrc}
-                        alt={item.alt || item.title}
-                        loading="lazy"
-                        className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-[1.05]"
-                      />
-                    )}
+                    <EditableImage
+                      src={imageSrc}
+                      alt={item.alt || item.title}
+                      editable={editable}
+                      wrapperClassName="relative h-full w-full"
+                      className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-[1.05]"
+                      onEditStart={onEditStart}
+                      onCommit={publicUrl =>
+                        onUpdateCollectionItem?.(
+                          collection,
+                          item.id,
+                          "image",
+                          {
+                            ...item.image,
+                            key: "",
+                            url: publicUrl,
+                          },
+                        )
+                      }
+                    />
                   </div>
 
                   <div className="bg-card p-5">
