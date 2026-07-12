@@ -14,6 +14,7 @@ interface EditableImageProps {
   wrapperClassName?: string;
   loading?: "eager" | "lazy";
   emptyLabel?: string;
+  triggerMode?: "overlay" | "corner";
   onEditStart?: () => void;
   onCommit?: (publicUrl: string) => void;
 }
@@ -26,6 +27,7 @@ export default function EditableImage({
   wrapperClassName = "relative h-full w-full overflow-hidden",
   loading = "lazy",
   emptyLabel = "No image selected",
+  triggerMode = "overlay",
   onEditStart,
   onCommit,
 }: EditableImageProps) {
@@ -47,7 +49,6 @@ export default function EditableImage({
     event: ChangeEvent<HTMLInputElement>,
   ) {
     const file = event.target.files?.[0];
-
     event.target.value = "";
 
     if (!file) return;
@@ -93,6 +94,8 @@ export default function EditableImage({
     );
   }
 
+  const isCornerTrigger = triggerMode === "corner";
+
   return (
     <div
       className={`${wrapperClassName} group/editable-image`}
@@ -116,15 +119,27 @@ export default function EditableImage({
         onClick={openPicker}
         disabled={uploading}
         aria-label={src ? "Replace image" : "Select image"}
-        className="absolute inset-0 z-30 flex cursor-pointer items-center justify-center bg-black/0 transition group-hover/editable-image:bg-black/40 focus:bg-black/40 focus:outline-none disabled:cursor-wait"
+        className={
+          isCornerTrigger
+            ? "absolute right-4 top-4 z-40 rounded-full bg-black/80 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-white shadow transition hover:bg-black disabled:cursor-wait disabled:opacity-60"
+            : "absolute inset-0 z-30 flex cursor-pointer items-center justify-center bg-black/0 transition group-hover/editable-image:bg-black/40 focus:bg-black/40 focus:outline-none disabled:cursor-wait"
+        }
       >
-        <span className="rounded-full bg-black/80 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-white opacity-0 shadow transition group-hover/editable-image:opacity-100 group-focus-within/editable-image:opacity-100">
-          {uploading
+        {isCornerTrigger ? (
+          uploading
             ? "Uploading..."
             : src
               ? "Replace Image"
-              : "Select Image"}
-        </span>
+              : "Select Image"
+        ) : (
+          <span className="rounded-full bg-black/80 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-white opacity-0 shadow transition group-hover/editable-image:opacity-100 group-focus-within/editable-image:opacity-100">
+            {uploading
+              ? "Uploading..."
+              : src
+                ? "Replace Image"
+                : "Select Image"}
+          </span>
+        )}
       </button>
 
       <input
@@ -136,7 +151,7 @@ export default function EditableImage({
       />
 
       {error && (
-        <div className="absolute bottom-3 left-3 right-3 z-40 rounded-lg bg-red-600 px-3 py-2 text-xs text-white shadow">
+        <div className="absolute bottom-3 left-3 right-3 z-50 rounded-lg bg-red-600 px-3 py-2 text-xs text-white shadow">
           {error}
         </div>
       )}

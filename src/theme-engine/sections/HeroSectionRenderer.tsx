@@ -48,6 +48,7 @@ export default function HeroSectionRenderer({
             alt={data.imageAlt || data.title || "Hero image"}
             editable={editable}
             loading="eager"
+            triggerMode="corner"
             wrapperClassName="relative h-full w-full"
             className="h-full w-full object-cover"
             onEditStart={onEditStart}
