@@ -13,6 +13,12 @@ interface PageRendererProps {
     field: string,
     value: unknown,
   ) => void;
+  onUpdateCollectionItem?: (
+    collection: "services" | "portfolio" | "testimonials" | "faqs",
+    itemId: string,
+    path: string,
+    value: unknown,
+  ) => void;
   editorMode?: boolean;
 }
 
@@ -21,6 +27,7 @@ export default function PageRenderer({
   selectedSectionId,
   onSelectSection,
   onUpdateSectionData,
+  onUpdateCollectionItem,
   editorMode = false,
 }: PageRendererProps) {
   const visibleSections = page.sections
@@ -113,6 +120,9 @@ export default function PageRenderer({
                   field,
                   value,
                 )
+              }
+              onUpdateCollectionItem={
+                onUpdateCollectionItem
               }
             />
           </div>

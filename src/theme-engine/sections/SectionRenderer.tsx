@@ -10,6 +10,12 @@ interface SectionRendererProps {
   editable?: boolean;
   onEditStart?: () => void;
   onUpdateField?: (field: string, value: unknown) => void;
+  onUpdateCollectionItem?: (
+    collection: "services" | "portfolio" | "testimonials" | "faqs",
+    itemId: string,
+    path: string,
+    value: unknown,
+  ) => void;
 }
 
 export default function SectionRenderer({
@@ -17,6 +23,7 @@ export default function SectionRenderer({
   editable = false,
   onEditStart,
   onUpdateField,
+  onUpdateCollectionItem,
 }: SectionRendererProps) {
   if (!section.visible) return null;
 
@@ -63,7 +70,15 @@ export default function SectionRenderer({
     case "portfolioGrid":
     case "testimonials":
     case "faq":
-      return <CollectionSectionRenderer data={section.data} />;
+      return (
+        <CollectionSectionRenderer
+          data={section.data}
+          editable={editable}
+          onEditStart={onEditStart}
+          onUpdateField={onUpdateField}
+          onUpdateCollectionItem={onUpdateCollectionItem}
+        />
+      );
 
     default:
       return (

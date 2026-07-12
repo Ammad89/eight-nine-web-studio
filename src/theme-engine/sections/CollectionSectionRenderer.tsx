@@ -2,12 +2,19 @@ import { Link } from "react-router";
 import { ArrowRight } from "lucide-react";
 import { useWebsite } from "../../cms-core/platform";
 import { resolveThemeAsset } from "../";
+import EditableText from "./EditableText";
+
+type CollectionName =
+  | "services"
+  | "portfolio"
+  | "testimonials"
+  | "faqs";
 
 export interface CollectionSectionData {
   eyebrow?: string;
   title?: string;
   subtitle?: string;
-  collection?: "services" | "portfolio" | "testimonials" | "faqs";
+  collection?: CollectionName;
   maxItems?: number;
   featuredOnly?: boolean;
   category?: string;
@@ -16,11 +23,32 @@ export interface CollectionSectionData {
   ctaHref?: string;
 }
 
-function isCollectionSectionData(value: unknown): value is CollectionSectionData {
+interface CollectionSectionRendererProps {
+  data: unknown;
+  editable?: boolean;
+  onEditStart?: () => void;
+  onUpdateField?: (path: string, value: unknown) => void;
+  onUpdateCollectionItem?: (
+    collection: CollectionName,
+    itemId: string,
+    path: string,
+    value: unknown,
+  ) => void;
+}
+
+function isCollectionSectionData(
+  value: unknown,
+): value is CollectionSectionData {
   return Boolean(value && typeof value === "object");
 }
 
-export default function CollectionSectionRenderer({ data }: { data: unknown }) {
+export default function CollectionSectionRenderer({
+  data,
+  editable = false,
+  onEditStart,
+  onUpdateField,
+  onUpdateCollectionItem,
+}: CollectionSectionRendererProps) {
   const { website } = useWebsite();
 
   if (!isCollectionSectionData(data)) return null;
@@ -33,14 +61,35 @@ export default function CollectionSectionRenderer({ data }: { data: unknown }) {
 
   const items = rawItems
     .filter(item => {
-      if (data.featuredOnly && "isFeatured" in item && !item.isFeatured) return false;
-      if (data.category && "category" in item && item.category !== data.category) return false;
-      if ("isVisible" in item && item.isVisible === false) return false;
+      if (
+        data.featuredOnly &&
+        "isFeatured" in item &&
+        !item.isFeatured
+      ) {
+        return false;
+      }
+
+      if (
+        data.category &&
+        "category" in item &&
+        item.category !== data.category
+      ) {
+        return false;
+      }
+
+      if ("isVisible" in item && item.isVisible === false) {
+        return false;
+      }
+
       return true;
     })
     .sort((a, b) => {
-      const aOrder = "sortOrder" in a ? a.sortOrder || 0 : 0;
-      const bOrder = "sortOrder" in b ? b.sortOrder || 0 : 0;
+      const aOrder =
+        "sortOrder" in a ? Number(a.sortOrder || 0) : 0;
+
+      const bOrder =
+        "sortOrder" in b ? Number(b.sortOrder || 0) : 0;
+
       return aOrder - bOrder;
     })
     .slice(0, maxItems);
@@ -49,25 +98,49 @@ export default function CollectionSectionRenderer({ data }: { data: unknown }) {
     <section className="bg-background py-24">
       <div className="mx-auto max-w-7xl px-6">
         <div className="mb-14 text-center">
-          {data.eyebrow && (
-            <p className="mb-4 text-[10px] font-medium uppercase tracking-[0.35em] text-muted-foreground">
-              {data.eyebrow}
-            </p>
+          {(data.eyebrow || editable) && (
+            <EditableText
+              as="p"
+              value={data.eyebrow || "Collection eyebrow"}
+              editable={editable}
+              onEditStart={onEditStart}
+              onCommit={value =>
+                onUpdateField?.("eyebrow", value)
+              }
+              className="mb-4 text-[10px] font-medium uppercase tracking-[0.35em] text-muted-foreground"
+            />
           )}
 
-          {data.title && (
-            <h2
+          {(data.title || editable) && (
+            <EditableText
+              as="h2"
+              value={data.title || "Collection title"}
+              editable={editable}
+              multiline
+              onEditStart={onEditStart}
+              onCommit={value =>
+                onUpdateField?.("title", value)
+              }
               className="mb-5 text-3xl font-medium text-foreground sm:text-5xl"
               style={{ fontFamily: "'Lora', Georgia, serif" }}
-            >
-              {data.title}
-            </h2>
+            />
           )}
 
-          {data.subtitle && (
-            <p className="mx-auto max-w-2xl text-sm leading-7 text-muted-foreground">
-              {data.subtitle}
-            </p>
+          {(data.subtitle || editable) && (
+            <EditableText
+              as="p"
+              value={
+                data.subtitle ||
+                "Add supporting collection text."
+              }
+              editable={editable}
+              multiline
+              onEditStart={onEditStart}
+              onCommit={value =>
+                onUpdateField?.("subtitle", value)
+              }
+              className="mx-auto max-w-2xl text-sm leading-7 text-muted-foreground"
+            />
           )}
         </div>
 
@@ -85,20 +158,61 @@ export default function CollectionSectionRenderer({ data }: { data: unknown }) {
               return (
                 <Link
                   key={item.id}
-                  to={"slug" in item ? item.slug : "#"}
+                  to={
+                    editable
+                      ? "#"
+                      : "slug" in item
+                        ? item.slug
+                        : "#"
+                  }
+                  onClick={event => {
+                    if (editable) {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      onEditStart?.();
+                    }
+                  }}
                   className="group rounded-3xl border border-border bg-card p-7 transition-colors duration-500 hover:bg-secondary"
                 >
-                  <h3
+                  <EditableText
+                    as="h3"
+                    value={String(item.title || "")}
+                    editable={editable}
+                    multiline
+                    onEditStart={onEditStart}
+                    onCommit={value =>
+                      onUpdateCollectionItem?.(
+                        collection,
+                        item.id,
+                        "title",
+                        value,
+                      )
+                    }
                     className="mb-3 text-xl font-medium text-foreground"
-                    style={{ fontFamily: "'Lora', Georgia, serif" }}
-                  >
-                    {item.title}
-                  </h3>
+                    style={{
+                      fontFamily: "'Lora', Georgia, serif",
+                    }}
+                  />
+
                   {"shortDescription" in item && (
-                    <p className="mb-6 text-sm leading-7 text-muted-foreground">
-                      {item.shortDescription}
-                    </p>
+                    <EditableText
+                      as="p"
+                      value={String(item.shortDescription || "")}
+                      editable={editable}
+                      multiline
+                      onEditStart={onEditStart}
+                      onCommit={value =>
+                        onUpdateCollectionItem?.(
+                          collection,
+                          item.id,
+                          "shortDescription",
+                          value,
+                        )
+                      }
+                      className="mb-6 text-sm leading-7 text-muted-foreground"
+                    />
                   )}
+
                   <span className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.12em] text-foreground">
                     View service <ArrowRight size={13} />
                   </span>
@@ -113,10 +227,15 @@ export default function CollectionSectionRenderer({ data }: { data: unknown }) {
             {items.map(item => {
               if (!("image" in item)) return null;
 
-              const imageSrc = item.image.key ? resolveThemeAsset(item.image.key) : item.image.url || "";
+              const imageSrc = item.image.key
+                ? resolveThemeAsset(item.image.key)
+                : item.image.url || "";
 
               return (
-                <div key={item.id} className="group overflow-hidden rounded-3xl bg-muted">
+                <div
+                  key={item.id}
+                  className="group overflow-hidden rounded-3xl bg-muted"
+                >
                   <div className="aspect-[4/5] overflow-hidden">
                     {imageSrc && (
                       <img
@@ -127,16 +246,47 @@ export default function CollectionSectionRenderer({ data }: { data: unknown }) {
                       />
                     )}
                   </div>
+
                   <div className="bg-card p-5">
-                    <p className="mb-1 text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
-                      {"category" in item ? item.category : "Portfolio"}
-                    </p>
-                    <h3
+                    {"category" in item && (
+                      <EditableText
+                        as="p"
+                        value={String(
+                          item.category || "Portfolio",
+                        )}
+                        editable={editable}
+                        onEditStart={onEditStart}
+                        onCommit={value =>
+                          onUpdateCollectionItem?.(
+                            collection,
+                            item.id,
+                            "category",
+                            value,
+                          )
+                        }
+                        className="mb-1 text-[10px] uppercase tracking-[0.25em] text-muted-foreground"
+                      />
+                    )}
+
+                    <EditableText
+                      as="h3"
+                      value={String(item.title || "")}
+                      editable={editable}
+                      multiline
+                      onEditStart={onEditStart}
+                      onCommit={value =>
+                        onUpdateCollectionItem?.(
+                          collection,
+                          item.id,
+                          "title",
+                          value,
+                        )
+                      }
                       className="text-lg font-medium text-foreground"
-                      style={{ fontFamily: "'Lora', Georgia, serif" }}
-                    >
-                      {item.title}
-                    </h3>
+                      style={{
+                        fontFamily: "'Lora', Georgia, serif",
+                      }}
+                    />
                   </div>
                 </div>
               );
@@ -144,27 +294,80 @@ export default function CollectionSectionRenderer({ data }: { data: unknown }) {
           </div>
         )}
 
-        {items.length > 0 && collection === "testimonials" && (
-          <div className={`grid gap-5 ${layout === "quotes" ? "md:grid-cols-2" : "md:grid-cols-3"}`}>
-            {items.map(item => {
-              if (!("quote" in item)) return null;
+        {items.length > 0 &&
+          collection === "testimonials" && (
+            <div
+              className={`grid gap-5 ${
+                layout === "quotes"
+                  ? "md:grid-cols-2"
+                  : "md:grid-cols-3"
+              }`}
+            >
+              {items.map(item => {
+                if (!("quote" in item)) return null;
 
-              return (
-                <blockquote key={item.id} className="rounded-3xl border border-border bg-card p-7">
-                  <p className="mb-6 text-sm leading-7 text-muted-foreground">
-                    “{item.quote}”
-                  </p>
-                  <footer>
-                    <p className="font-medium text-foreground">{item.author}</p>
-                    {item.role && (
-                      <p className="mt-1 text-xs text-muted-foreground">{item.role}</p>
-                    )}
-                  </footer>
-                </blockquote>
-              );
-            })}
-          </div>
-        )}
+                return (
+                  <blockquote
+                    key={item.id}
+                    className="rounded-3xl border border-border bg-card p-7"
+                  >
+                    <EditableText
+                      as="p"
+                      value={String(item.quote || "")}
+                      editable={editable}
+                      multiline
+                      onEditStart={onEditStart}
+                      onCommit={value =>
+                        onUpdateCollectionItem?.(
+                          collection,
+                          item.id,
+                          "quote",
+                          value,
+                        )
+                      }
+                      className="mb-6 text-sm leading-7 text-muted-foreground"
+                    />
+
+                    <footer>
+                      <EditableText
+                        as="p"
+                        value={String(item.author || "")}
+                        editable={editable}
+                        onEditStart={onEditStart}
+                        onCommit={value =>
+                          onUpdateCollectionItem?.(
+                            collection,
+                            item.id,
+                            "author",
+                            value,
+                          )
+                        }
+                        className="font-medium text-foreground"
+                      />
+
+                      {item.role && (
+                        <EditableText
+                          as="p"
+                          value={String(item.role)}
+                          editable={editable}
+                          onEditStart={onEditStart}
+                          onCommit={value =>
+                            onUpdateCollectionItem?.(
+                              collection,
+                              item.id,
+                              "role",
+                              value,
+                            )
+                          }
+                          className="mt-1 text-xs text-muted-foreground"
+                        />
+                      )}
+                    </footer>
+                  </blockquote>
+                );
+              })}
+            </div>
+          )}
 
         {items.length > 0 && collection === "faqs" && (
           <div className="mx-auto max-w-3xl divide-y divide-border rounded-3xl border border-border bg-card">
@@ -173,8 +376,39 @@ export default function CollectionSectionRenderer({ data }: { data: unknown }) {
 
               return (
                 <div key={item.id} className="p-6">
-                  <h3 className="mb-2 font-medium text-foreground">{item.question}</h3>
-                  <p className="text-sm leading-7 text-muted-foreground">{item.answer}</p>
+                  <EditableText
+                    as="h3"
+                    value={String(item.question || "")}
+                    editable={editable}
+                    multiline
+                    onEditStart={onEditStart}
+                    onCommit={value =>
+                      onUpdateCollectionItem?.(
+                        collection,
+                        item.id,
+                        "question",
+                        value,
+                      )
+                    }
+                    className="mb-2 font-medium text-foreground"
+                  />
+
+                  <EditableText
+                    as="p"
+                    value={String(item.answer || "")}
+                    editable={editable}
+                    multiline
+                    onEditStart={onEditStart}
+                    onCommit={value =>
+                      onUpdateCollectionItem?.(
+                        collection,
+                        item.id,
+                        "answer",
+                        value,
+                      )
+                    }
+                    className="text-sm leading-7 text-muted-foreground"
+                  />
                 </div>
               );
             })}
@@ -184,10 +418,23 @@ export default function CollectionSectionRenderer({ data }: { data: unknown }) {
         {data.ctaLabel && data.ctaHref && (
           <div className="mt-12 text-center">
             <Link
-              to={data.ctaHref}
+              to={editable ? "#" : data.ctaHref}
+              onClick={event => {
+                if (editable) event.preventDefault();
+              }}
               className="group inline-flex items-center gap-[18px] text-xs font-medium uppercase tracking-[0.12em] text-foreground"
             >
-              <span className="group-hover:[order:1]">{data.ctaLabel}</span>
+              <EditableText
+                as="span"
+                value={data.ctaLabel}
+                editable={editable}
+                onEditStart={onEditStart}
+                onCommit={value =>
+                  onUpdateField?.("ctaLabel", value)
+                }
+                className="group-hover:[order:1]"
+              />
+
               <span className="group-hover:[order:0] flex items-center">
                 <ArrowRight size={14} />
               </span>

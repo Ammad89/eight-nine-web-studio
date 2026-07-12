@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import {
   getDefaultSectionData,
+  setValueAtPath,
   useWebsite,
 } from "../../platform";
 import type {
@@ -272,6 +273,42 @@ export default function PlatformVisualEditorPanel() {
         updatedAt: new Date().toISOString(),
       },
     }));
+  }
+
+  function updateCollectionItem(
+    collection: "services" | "portfolio" | "testimonials" | "faqs",
+    itemId: string,
+    path: string,
+    value: unknown,
+  ) {
+    setWebsite(current => {
+      const nextCollections = structuredClone(
+        current.collections,
+      );
+
+      const collectionMap =
+        nextCollections as unknown as Record<
+          string,
+          Array<Record<string, unknown>>
+        >;
+
+      const items = collectionMap[collection] || [];
+
+      collectionMap[collection] = items.map(item =>
+        item.id === itemId
+          ? setValueAtPath(item, path, value)
+          : item,
+      );
+
+      return {
+        ...current,
+        collections: nextCollections,
+        publishing: {
+          ...current.publishing,
+          updatedAt: new Date().toISOString(),
+        },
+      };
+    });
   }
 
   function updateSection(
@@ -867,6 +904,7 @@ export default function PlatformVisualEditorPanel() {
               selectedSectionId={selectedSectionId}
               onSelectSection={selectSection}
               onUpdateSectionData={updateSectionDataById}
+              onUpdateCollectionItem={updateCollectionItem}
             />
           </div>
         </div>
