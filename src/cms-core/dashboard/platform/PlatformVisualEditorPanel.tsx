@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   getDefaultSectionData,
   setValueAtPath,
@@ -175,7 +175,14 @@ function toLabel(value: string) {
 }
 
 export default function PlatformVisualEditorPanel() {
-  const { website, setWebsite } = useWebsite();
+  const {
+    website,
+    setWebsite,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+  } = useWebsite();
 
   const firstPageId = website.pages[0]?.id || "";
   const [selectedPageId, setSelectedPageId] = useState(firstPageId);
@@ -188,6 +195,56 @@ export default function PlatformVisualEditorPanel() {
     useState<SectionLibraryCategory>("all");
   const [sectionInsertPosition, setSectionInsertPosition] =
     useState<SectionInsertPosition>("end");
+
+  useEffect(() => {
+    function handleHistoryShortcut(
+      event: KeyboardEvent,
+    ) {
+      const target = event.target as HTMLElement | null;
+
+      const isTyping =
+        target?.isContentEditable ||
+        target?.closest(
+          "[contenteditable='true']",
+        ) !== null ||
+        target?.tagName === "INPUT" ||
+        target?.tagName === "TEXTAREA" ||
+        target?.tagName === "SELECT";
+
+      if (isTyping) return;
+
+      const modifier =
+        event.ctrlKey || event.metaKey;
+
+      if (!modifier) return;
+
+      if (
+        event.key.toLowerCase() === "z" &&
+        event.shiftKey
+      ) {
+        event.preventDefault();
+        redo();
+        return;
+      }
+
+      if (event.key.toLowerCase() === "z") {
+        event.preventDefault();
+        undo();
+      }
+    }
+
+    window.addEventListener(
+      "keydown",
+      handleHistoryShortcut,
+    );
+
+    return () => {
+      window.removeEventListener(
+        "keydown",
+        handleHistoryShortcut,
+      );
+    };
+  }, [redo, undo]);
 
   const selectedPage = useMemo(
     () =>
@@ -712,23 +769,49 @@ export default function PlatformVisualEditorPanel() {
           <h2 className="mt-1 text-lg font-semibold">Visual Editor</h2>
         </div>
 
-        <select
-          id="visual-editor-page"
-          name="visualEditorPage"
-          aria-label="Select page to edit"
-          value={selectedPage.id}
-          onChange={event => {
-            setSelectedPageId(event.target.value);
-            setSelectedSectionId("");
-          }}
-          className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
-        >
-          {website.pages.map(page => (
-            <option key={page.id} value={page.id}>
-              {page.title}
-            </option>
-          ))}
-        </select>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center rounded-lg border border-border bg-background p-1">
+            <button
+              type="button"
+              onClick={undo}
+              disabled={!canUndo}
+              title="Undo (Ctrl+Z)"
+              aria-label="Undo last change"
+              className="rounded-md px-3 py-1.5 text-xs font-medium transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-35"
+            >
+              Undo
+            </button>
+
+            <button
+              type="button"
+              onClick={redo}
+              disabled={!canRedo}
+              title="Redo (Ctrl+Shift+Z)"
+              aria-label="Redo last change"
+              className="rounded-md px-3 py-1.5 text-xs font-medium transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-35"
+            >
+              Redo
+            </button>
+          </div>
+
+          <select
+            id="visual-editor-page"
+            name="visualEditorPage"
+            aria-label="Select page to edit"
+            value={selectedPage.id}
+            onChange={event => {
+              setSelectedPageId(event.target.value);
+              setSelectedSectionId("");
+            }}
+            className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+          >
+            {website.pages.map(page => (
+              <option key={page.id} value={page.id}>
+                {page.title}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <div className="grid min-h-0 flex-1 grid-cols-1 xl:grid-cols-[250px_minmax(0,1fr)_360px]">
