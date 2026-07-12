@@ -2,8 +2,10 @@ import {
   createElement,
   useEffect,
   useRef,
+  useState,
   type CSSProperties,
   type KeyboardEvent,
+  type MouseEvent as ReactMouseEvent,
 } from "react";
 
 interface EditableTextProps {
@@ -29,6 +31,7 @@ export default function EditableText({
 }: EditableTextProps) {
   const elementRef = useRef<HTMLElement | null>(null);
   const initialValueRef = useRef(value);
+  const [isFocused, setIsFocused] = useState(false);
 
   useEffect(() => {
     const element = elementRef.current;
@@ -55,9 +58,13 @@ export default function EditableText({
       onCommit?.(nextValue);
       initialValueRef.current = nextValue;
     }
+
+    setIsFocused(false);
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLElement>) {
+    event.stopPropagation();
+
     if (event.key === "Escape") {
       event.preventDefault();
 
@@ -75,7 +82,7 @@ export default function EditableText({
     }
   }
 
-  return createElement(
+  const editableElement = createElement(
     as,
     {
       ref: elementRef,
@@ -84,7 +91,7 @@ export default function EditableText({
       spellCheck: editable,
       className: `${className} ${
         editable
-          ? "cursor-text rounded-sm outline-none transition-shadow hover:ring-2 hover:ring-blue-300 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          ? "relative z-10 cursor-text rounded-sm outline-none transition-shadow hover:ring-2 hover:ring-blue-300 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           : ""
       }`,
       style,
@@ -92,15 +99,36 @@ export default function EditableText({
         initialValueRef.current =
           elementRef.current?.innerText || value;
 
+        setIsFocused(true);
         onEditStart?.();
       },
       onBlur: commitValue,
       onKeyDown: handleKeyDown,
       onClick: editable
-        ? (event: MouseEvent) => event.stopPropagation()
+        ? (event: ReactMouseEvent<HTMLElement>) => {
+            event.stopPropagation();
+          }
         : undefined,
       "data-inline-editable": editable ? "true" : undefined,
     },
     value,
+  );
+
+  if (!editable) return editableElement;
+
+  return (
+    <span className="group/editable relative block">
+      {editableElement}
+
+      <span
+        className={`pointer-events-none absolute -right-2 -top-3 z-30 rounded-full px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.12em] shadow transition ${
+          isFocused
+            ? "bg-blue-600 text-white opacity-100"
+            : "bg-black/80 text-white opacity-0 group-hover/editable:opacity-100"
+        }`}
+      >
+        {isFocused ? "Editing" : "Edit"}
+      </span>
+    </span>
   );
 }

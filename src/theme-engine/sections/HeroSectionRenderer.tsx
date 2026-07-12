@@ -42,11 +42,22 @@ export default function HeroSectionRenderer({
     <section className="relative min-h-[78vh] overflow-hidden bg-background pt-[72px]">
       {imageSrc && (
         <div className="absolute inset-0">
-          <img
-            src={imageSrc}
-            alt={data.imageAlt || data.title || "Hero image"}
-            className="h-full w-full object-cover"
-          />
+          <div className="group/image relative h-full w-full">
+            <img
+              src={imageSrc}
+              alt={data.imageAlt || data.title || "Hero image"}
+              className="h-full w-full object-cover"
+            />
+
+            {editable && (
+              <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-black/0 transition group-hover/image:bg-black/20">
+                <span className="rounded-full bg-black/80 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-white opacity-0 shadow transition group-hover/image:opacity-100">
+                  Replace Image
+                </span>
+              </div>
+            )}
+          </div>
+
           <div className="absolute inset-0 bg-black/45" />
         </div>
       )}
