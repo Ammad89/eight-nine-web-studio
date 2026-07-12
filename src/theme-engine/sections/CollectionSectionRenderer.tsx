@@ -165,6 +165,11 @@ export default function CollectionSectionRenderer({
                         ? item.slug
                         : "#"
                   }
+                  onClickCapture={event => {
+                    if (editable) {
+                      event.preventDefault();
+                    }
+                  }}
                   onClick={event => {
                     if (editable) {
                       event.preventDefault();
