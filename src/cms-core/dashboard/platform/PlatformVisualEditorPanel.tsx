@@ -19,6 +19,30 @@ type SectionLibraryCategory =
 
 type SectionInsertPosition = "end" | "above" | "below";
 
+type PreviewMode = "desktop" | "tablet" | "mobile";
+
+const previewModes: Array<{
+  id: PreviewMode;
+  label: string;
+  width: number;
+}> = [
+  {
+    id: "desktop",
+    label: "Desktop",
+    width: 1200,
+  },
+  {
+    id: "tablet",
+    label: "Tablet",
+    width: 768,
+  },
+  {
+    id: "mobile",
+    label: "Mobile",
+    width: 390,
+  },
+];
+
 interface SectionLibraryItem {
   type: SectionType;
   title: string;
@@ -196,6 +220,9 @@ export default function PlatformVisualEditorPanel() {
   const [sectionInsertPosition, setSectionInsertPosition] =
     useState<SectionInsertPosition>("end");
 
+  const [previewMode, setPreviewMode] =
+    useState<PreviewMode>("desktop");
+
   useEffect(() => {
     function handleHistoryShortcut(
       event: KeyboardEvent,
@@ -245,6 +272,11 @@ export default function PlatformVisualEditorPanel() {
       );
     };
   }, [redo, undo]);
+
+  const activePreviewMode =
+    previewModes.find(
+      mode => mode.id === previewMode,
+    ) || previewModes[0];
 
   const selectedPage = useMemo(
     () =>
@@ -794,6 +826,29 @@ export default function PlatformVisualEditorPanel() {
             </button>
           </div>
 
+          <div
+            className="flex items-center rounded-lg border border-border bg-background p-1"
+            role="group"
+            aria-label="Responsive preview mode"
+          >
+            {previewModes.map(mode => (
+              <button
+                key={mode.id}
+                type="button"
+                onClick={() => setPreviewMode(mode.id)}
+                aria-pressed={previewMode === mode.id}
+                title={`${mode.label} preview at ${mode.width}px`}
+                className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${
+                  previewMode === mode.id
+                    ? "bg-foreground text-background"
+                    : "hover:bg-muted"
+                }`}
+              >
+                {mode.label}
+              </button>
+            ))}
+          </div>
+
           <select
             id="visual-editor-page"
             name="visualEditorPage"
@@ -980,8 +1035,27 @@ export default function PlatformVisualEditorPanel() {
           className="overflow-auto bg-neutral-100 p-5"
           onClick={() => setSelectedSectionId("")}
         >
-          <div className="mx-auto min-h-[700px] max-w-[1200px] overflow-hidden rounded-xl bg-white shadow">
-            <PageRenderer
+          <div className="mb-3 flex items-center justify-center">
+            <div className="rounded-full border border-neutral-300 bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-neutral-500 shadow-sm">
+              {activePreviewMode.label}
+              {" · "}
+              {activePreviewMode.width}px
+            </div>
+          </div>
+
+          <div className="flex min-w-max justify-center">
+            <div
+              className="min-h-[700px] overflow-hidden rounded-xl bg-white shadow-xl transition-[width] duration-300 ease-out"
+              style={{
+                width: `${activePreviewMode.width}px`,
+                maxWidth:
+                  previewMode === "desktop"
+                    ? "100%"
+                    : "none",
+              }}
+              data-preview-mode={previewMode}
+            >
+              <PageRenderer
               page={selectedPage}
               editorMode
               selectedSectionId={selectedSectionId}
@@ -989,6 +1063,7 @@ export default function PlatformVisualEditorPanel() {
               onUpdateSectionData={updateSectionDataById}
               onUpdateCollectionItem={updateCollectionItem}
             />
+            </div>
           </div>
         </div>
 
