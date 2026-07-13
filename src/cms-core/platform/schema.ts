@@ -128,6 +128,29 @@ export interface SeoSettings {
   schemaType?: string;
 }
 
+export type ResponsiveDevice =
+  | "desktop"
+  | "tablet"
+  | "mobile";
+
+export interface ElementStyle {
+  width?: string;
+  minHeight?: string;
+  paddingTop?: number;
+  paddingBottom?: number;
+  opacity?: number;
+  backgroundColor?: string;
+  borderRadius?: number;
+  overflow?: "visible" | "hidden" | "auto";
+  zIndex?: number;
+}
+
+export interface ResponsiveStyle {
+  desktop?: ElementStyle;
+  tablet?: ElementStyle;
+  mobile?: ElementStyle;
+}
+
 export interface PageSection {
   id: string;
   type: SectionType;
@@ -135,6 +158,7 @@ export interface PageSection {
   visible: boolean;
   sortOrder: number;
   data: Record<string, unknown>;
+  style?: ResponsiveStyle;
 }
 
 export interface PageDefinition {

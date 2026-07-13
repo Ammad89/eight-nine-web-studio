@@ -1,12 +1,16 @@
+import type { CSSProperties } from "react";
 import { SectionRenderer } from "./sections";
 import type {
+  ElementStyle,
   PageDefinition,
   PageSection,
+  ResponsiveDevice,
 } from "../cms-core/platform";
 
 interface PageRendererProps {
   page: PageDefinition;
   selectedSectionId?: string;
+  previewMode?: ResponsiveDevice;
   onSelectSection?: (section: PageSection) => void;
   onUpdateSectionData?: (
     sectionId: string,
@@ -14,7 +18,11 @@ interface PageRendererProps {
     value: unknown,
   ) => void;
   onUpdateCollectionItem?: (
-    collection: "services" | "portfolio" | "testimonials" | "faqs",
+    collection:
+      | "services"
+      | "portfolio"
+      | "testimonials"
+      | "faqs",
     itemId: string,
     path: string,
     value: unknown,
@@ -22,9 +30,72 @@ interface PageRendererProps {
   editorMode?: boolean;
 }
 
+function resolveStyle(
+  section: PageSection,
+  device: ResponsiveDevice,
+): ElementStyle {
+  const desktop = section.style?.desktop || {};
+
+  if (device === "desktop") return desktop;
+
+  const tablet = section.style?.tablet || {};
+
+  if (device === "tablet") {
+    return {
+      ...desktop,
+      ...tablet,
+    };
+  }
+
+  return {
+    ...desktop,
+    ...tablet,
+    ...(section.style?.mobile || {}),
+  };
+}
+
+function toCssStyle(
+  style: ElementStyle,
+): CSSProperties {
+  return {
+    width: style.width || undefined,
+    minHeight: style.minHeight || undefined,
+    paddingTop:
+      typeof style.paddingTop === "number"
+        ? `${style.paddingTop}px`
+        : undefined,
+    paddingBottom:
+      typeof style.paddingBottom === "number"
+        ? `${style.paddingBottom}px`
+        : undefined,
+    opacity:
+      typeof style.opacity === "number"
+        ? style.opacity
+        : undefined,
+    backgroundColor:
+      style.backgroundColor || undefined,
+    borderRadius:
+      typeof style.borderRadius === "number"
+        ? `${style.borderRadius}px`
+        : undefined,
+    overflow: style.overflow || undefined,
+    zIndex:
+      typeof style.zIndex === "number"
+        ? style.zIndex
+        : undefined,
+    position:
+      typeof style.zIndex === "number"
+        ? "relative"
+        : undefined,
+    marginLeft: "auto",
+    marginRight: "auto",
+  };
+}
+
 export default function PageRenderer({
   page,
   selectedSectionId,
+  previewMode = "desktop",
   onSelectSection,
   onUpdateSectionData,
   onUpdateCollectionItem,
@@ -57,14 +128,21 @@ export default function PageRenderer({
   return (
     <main>
       {visibleSections.map(section => {
-        const isSelected = section.id === selectedSectionId;
+        const isSelected =
+          section.id === selectedSectionId;
+
+        const sectionStyle = toCssStyle(
+          resolveStyle(section, previewMode),
+        );
 
         if (!editorMode) {
           return (
-            <SectionRenderer
+            <div
               key={section.id}
-              section={section}
-            />
+              style={sectionStyle}
+            >
+              <SectionRenderer section={section} />
+            </div>
           );
         }
 
@@ -73,23 +151,31 @@ export default function PageRenderer({
             key={section.id}
             role="button"
             tabIndex={0}
+            style={sectionStyle}
+            data-responsive-device={previewMode}
             onClick={event => {
               event.stopPropagation();
               onSelectSection?.(section);
             }}
             onKeyDown={event => {
-              const target = event.target as HTMLElement;
+              const target =
+                event.target as HTMLElement;
 
               const isEditing =
                 target.isContentEditable ||
-                target.closest("[contenteditable='true']") !== null ||
+                target.closest(
+                  "[contenteditable='true']",
+                ) !== null ||
                 target.tagName === "INPUT" ||
                 target.tagName === "TEXTAREA" ||
                 target.tagName === "SELECT";
 
               if (isEditing) return;
 
-              if (event.key === "Enter" || event.key === " ") {
+              if (
+                event.key === "Enter" ||
+                event.key === " "
+              ) {
                 event.preventDefault();
                 onSelectSection?.(section);
               }
@@ -101,7 +187,7 @@ export default function PageRenderer({
             }`}
           >
             <div
-              className={`pointer-events-none absolute left-3 top-3 z-40 rounded-md px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] shadow ${
+              className={`pointer-events-none absolute left-3 top-3 z-[90] rounded-md px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] shadow ${
                 isSelected
                   ? "bg-blue-600 text-white"
                   : "bg-black/70 text-white opacity-0 group-hover:opacity-100"
@@ -113,7 +199,9 @@ export default function PageRenderer({
             <SectionRenderer
               section={section}
               editable={editorMode}
-              onEditStart={() => onSelectSection?.(section)}
+              onEditStart={() =>
+                onSelectSection?.(section)
+              }
               onUpdateField={(field, value) =>
                 onUpdateSectionData?.(
                   section.id,

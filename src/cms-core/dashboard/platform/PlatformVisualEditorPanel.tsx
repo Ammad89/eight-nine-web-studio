@@ -5,6 +5,7 @@ import {
   useWebsite,
 } from "../../platform";
 import type {
+  ElementStyle,
   PageSection,
   SectionType,
 } from "../../platform";
@@ -398,6 +399,72 @@ export default function PlatformVisualEditorPanel() {
         },
       };
     });
+  }
+
+  function updateResponsiveStyle(
+    field: keyof ElementStyle,
+    value: string | number | undefined,
+  ) {
+    if (!selectedPage || !selectedSection) return;
+
+    setWebsite(current => ({
+      ...current,
+      pages: current.pages.map(page =>
+        page.id !== selectedPage.id
+          ? page
+          : {
+              ...page,
+              sections: page.sections.map(section =>
+                section.id !== selectedSection.id
+                  ? section
+                  : {
+                      ...section,
+                      style: {
+                        ...(section.style || {}),
+                        [previewMode]: {
+                          ...(section.style?.[previewMode] || {}),
+                          [field]: value,
+                        },
+                      },
+                    },
+              ),
+            },
+      ),
+      publishing: {
+        ...current.publishing,
+        updatedAt: new Date().toISOString(),
+      },
+    }));
+  }
+
+  function resetResponsiveStyle() {
+    if (!selectedPage || !selectedSection) return;
+
+    setWebsite(current => ({
+      ...current,
+      pages: current.pages.map(page =>
+        page.id !== selectedPage.id
+          ? page
+          : {
+              ...page,
+              sections: page.sections.map(section =>
+                section.id !== selectedSection.id
+                  ? section
+                  : {
+                      ...section,
+                      style: {
+                        ...(section.style || {}),
+                        [previewMode]: {},
+                      },
+                    },
+              ),
+            },
+      ),
+      publishing: {
+        ...current.publishing,
+        updatedAt: new Date().toISOString(),
+      },
+    }));
   }
 
   function updateSection(
@@ -1058,6 +1125,7 @@ export default function PlatformVisualEditorPanel() {
               <PageRenderer
               page={selectedPage}
               editorMode
+              previewMode={previewMode}
               selectedSectionId={selectedSectionId}
               onSelectSection={selectSection}
               onUpdateSectionData={updateSectionDataById}
@@ -1191,6 +1259,268 @@ export default function PlatformVisualEditorPanel() {
                     placeholder="default"
                   />
                 </label>
+
+                <div className="border-t border-border pt-5">
+                  <div className="mb-4 flex items-center justify-between gap-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] opacity-60">
+                      Layout and Layers
+                    </p>
+
+                    <span className="rounded-full border border-border px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.14em] opacity-60">
+                      {previewMode}
+                    </span>
+                  </div>
+
+                  <div className="space-y-4">
+                    <label className="block">
+                      <span className="mb-2 block text-sm font-medium">
+                        Width
+                      </span>
+
+                      <input
+                        id="section-style-width"
+                        name="sectionStyleWidth"
+                        value={
+                          selectedSection.style?.[previewMode]?.width ||
+                          ""
+                        }
+                        onChange={event =>
+                          updateResponsiveStyle(
+                            "width",
+                            event.target.value || undefined,
+                          )
+                        }
+                        className={fieldClass()}
+                        placeholder="100%, 800px or auto"
+                      />
+                    </label>
+
+                    <label className="block">
+                      <span className="mb-2 block text-sm font-medium">
+                        Minimum Height
+                      </span>
+
+                      <input
+                        id="section-style-min-height"
+                        name="sectionStyleMinHeight"
+                        value={
+                          selectedSection.style?.[previewMode]?.minHeight ||
+                          ""
+                        }
+                        onChange={event =>
+                          updateResponsiveStyle(
+                            "minHeight",
+                            event.target.value || undefined,
+                          )
+                        }
+                        className={fieldClass()}
+                        placeholder="500px or 80vh"
+                      />
+                    </label>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <label className="block">
+                        <span className="mb-2 block text-sm font-medium">
+                          Padding Top
+                        </span>
+
+                        <input
+                          id="section-style-padding-top"
+                          name="sectionStylePaddingTop"
+                          type="number"
+                          min="0"
+                          value={
+                            selectedSection.style?.[previewMode]?.paddingTop ??
+                            ""
+                          }
+                          onChange={event =>
+                            updateResponsiveStyle(
+                              "paddingTop",
+                              event.target.value === ""
+                                ? undefined
+                                : Number(event.target.value),
+                            )
+                          }
+                          className={fieldClass()}
+                        />
+                      </label>
+
+                      <label className="block">
+                        <span className="mb-2 block text-sm font-medium">
+                          Padding Bottom
+                        </span>
+
+                        <input
+                          id="section-style-padding-bottom"
+                          name="sectionStylePaddingBottom"
+                          type="number"
+                          min="0"
+                          value={
+                            selectedSection.style?.[previewMode]?.paddingBottom ??
+                            ""
+                          }
+                          onChange={event =>
+                            updateResponsiveStyle(
+                              "paddingBottom",
+                              event.target.value === ""
+                                ? undefined
+                                : Number(event.target.value),
+                            )
+                          }
+                          className={fieldClass()}
+                        />
+                      </label>
+                    </div>
+
+                    <label className="block">
+                      <div className="mb-2 flex items-center justify-between">
+                        <span className="text-sm font-medium">
+                          Opacity
+                        </span>
+
+                        <span className="text-xs opacity-60">
+                          {Math.round(
+                            (
+                              selectedSection.style?.[previewMode]?.opacity ??
+                              1
+                            ) * 100,
+                          )}%
+                        </span>
+                      </div>
+
+                      <input
+                        id="section-style-opacity"
+                        name="sectionStyleOpacity"
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.05"
+                        value={
+                          selectedSection.style?.[previewMode]?.opacity ??
+                          1
+                        }
+                        onChange={event =>
+                          updateResponsiveStyle(
+                            "opacity",
+                            Number(event.target.value),
+                          )
+                        }
+                        className="w-full"
+                      />
+                    </label>
+
+                    <label className="block">
+                      <span className="mb-2 block text-sm font-medium">
+                        Background Colour
+                      </span>
+
+                      <input
+                        id="section-style-background"
+                        name="sectionStyleBackground"
+                        type="color"
+                        value={
+                          selectedSection.style?.[previewMode]?.backgroundColor ||
+                          "#ffffff"
+                        }
+                        onChange={event =>
+                          updateResponsiveStyle(
+                            "backgroundColor",
+                            event.target.value,
+                          )
+                        }
+                        className="h-10 w-full rounded-lg border border-border"
+                      />
+                    </label>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <label className="block">
+                        <span className="mb-2 block text-sm font-medium">
+                          Radius
+                        </span>
+
+                        <input
+                          id="section-style-radius"
+                          name="sectionStyleRadius"
+                          type="number"
+                          min="0"
+                          value={
+                            selectedSection.style?.[previewMode]?.borderRadius ??
+                            ""
+                          }
+                          onChange={event =>
+                            updateResponsiveStyle(
+                              "borderRadius",
+                              event.target.value === ""
+                                ? undefined
+                                : Number(event.target.value),
+                            )
+                          }
+                          className={fieldClass()}
+                        />
+                      </label>
+
+                      <label className="block">
+                        <span className="mb-2 block text-sm font-medium">
+                          Layer Order
+                        </span>
+
+                        <input
+                          id="section-style-z-index"
+                          name="sectionStyleZIndex"
+                          type="number"
+                          value={
+                            selectedSection.style?.[previewMode]?.zIndex ??
+                            ""
+                          }
+                          onChange={event =>
+                            updateResponsiveStyle(
+                              "zIndex",
+                              event.target.value === ""
+                                ? undefined
+                                : Number(event.target.value),
+                            )
+                          }
+                          className={fieldClass()}
+                        />
+                      </label>
+                    </div>
+
+                    <label className="block">
+                      <span className="mb-2 block text-sm font-medium">
+                        Overflow
+                      </span>
+
+                      <select
+                        id="section-style-overflow"
+                        name="sectionStyleOverflow"
+                        value={
+                          selectedSection.style?.[previewMode]?.overflow ||
+                          ""
+                        }
+                        onChange={event =>
+                          updateResponsiveStyle(
+                            "overflow",
+                            event.target.value || undefined,
+                          )
+                        }
+                        className={fieldClass()}
+                      >
+                        <option value="">Theme default</option>
+                        <option value="visible">Visible</option>
+                        <option value="hidden">Hidden</option>
+                        <option value="auto">Auto</option>
+                      </select>
+                    </label>
+
+                    <button
+                      type="button"
+                      onClick={resetResponsiveStyle}
+                      className="w-full rounded-lg border border-border px-3 py-2 text-xs font-medium hover:bg-muted"
+                    >
+                      Reset {previewMode} styles
+                    </button>
+                  </div>
+                </div>
 
                 <div className="border-t border-border pt-5">
                   <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] opacity-60">
