@@ -12,6 +12,12 @@ interface PageRendererProps {
   selectedSectionId?: string;
   previewMode?: ResponsiveDevice;
   onSelectSection?: (section: PageSection) => void;
+  onSelectElement?: (
+    sectionId: string,
+    elementKey: string,
+    type: "text" | "image" | "button" | "card",
+    label: string,
+  ) => void;
   onUpdateSectionData?: (
     sectionId: string,
     field: string,
@@ -97,6 +103,7 @@ export default function PageRenderer({
   selectedSectionId,
   previewMode = "desktop",
   onSelectSection,
+  onSelectElement,
   onUpdateSectionData,
   onUpdateCollectionItem,
   editorMode = false,
@@ -201,6 +208,18 @@ export default function PageRenderer({
               editable={editorMode}
               onEditStart={() =>
                 onSelectSection?.(section)
+              }
+              onSelectElement={(
+                elementKey,
+                type,
+                label,
+              ) =>
+                onSelectElement?.(
+                  section.id,
+                  elementKey,
+                  type,
+                  label,
+                )
               }
               onUpdateField={(field, value) =>
                 onUpdateSectionData?.(

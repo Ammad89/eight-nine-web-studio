@@ -15,7 +15,13 @@ interface EditableTextProps {
   multiline?: boolean;
   className?: string;
   style?: CSSProperties;
+  elementKey?: string;
+  elementLabel?: string;
   onEditStart?: () => void;
+  onSelectElement?: (
+    elementKey: string,
+    label: string,
+  ) => void;
   onCommit?: (value: string) => void;
 }
 
@@ -26,7 +32,10 @@ export default function EditableText({
   multiline = false,
   className = "",
   style,
+  elementKey,
+  elementLabel,
   onEditStart,
+  onSelectElement,
   onCommit,
 }: EditableTextProps) {
   const elementRef = useRef<HTMLElement | null>(null);
@@ -101,6 +110,13 @@ export default function EditableText({
 
         setIsFocused(true);
         onEditStart?.();
+
+        if (elementKey) {
+          onSelectElement?.(
+            elementKey,
+            elementLabel || elementKey,
+          );
+        }
       },
       onBlur: commitValue,
       onKeyDown: handleKeyDown,
@@ -110,6 +126,14 @@ export default function EditableText({
           }
         : undefined,
       "data-inline-editable": editable ? "true" : undefined,
+      "data-editor-element-key":
+        editable && elementKey ? elementKey : undefined,
+      "data-editor-element-type":
+        editable && elementKey ? "text" : undefined,
+      "data-editor-element-label":
+        editable && elementKey
+          ? elementLabel || elementKey
+          : undefined,
     },
     value,
   );

@@ -21,6 +21,11 @@ interface RendererProps {
   data: unknown;
   editable?: boolean;
   onEditStart?: () => void;
+  onSelectElement?: (
+    elementKey: string,
+    type: "text" | "image" | "button" | "card",
+    label: string,
+  ) => void;
   onUpdateField?: (field: string, value: unknown) => void;
 }
 
@@ -32,6 +37,7 @@ export default function HeroSectionRenderer({
   data,
   editable = false,
   onEditStart,
+  onSelectElement,
   onUpdateField,
 }: RendererProps) {
   if (!isHeroSectionData(data)) return null;
@@ -47,6 +53,17 @@ export default function HeroSectionRenderer({
             src={imageSrc}
             alt={data.imageAlt || data.title || "Hero image"}
             editable={editable}
+            elementKey="image"
+            elementLabel="Hero Image"
+            elementKey="image"
+            elementLabel="Hero Image"
+            onSelectElement={(key, label) =>
+              onSelectElement?.(
+                key,
+                "image",
+                label,
+              )
+            }
             loading="eager"
             triggerMode="corner"
             wrapperClassName="relative h-full w-full"
@@ -80,7 +97,16 @@ export default function HeroSectionRenderer({
               as="p"
               value={data.eyebrow || "Eyebrow text"}
               editable={editable}
+              elementKey="eyebrow"
+              elementLabel="Hero Eyebrow"
               onEditStart={onEditStart}
+              onSelectElement={(key, label) =>
+                onSelectElement?.(
+                  key,
+                  "text",
+                  label,
+                )
+              }
               onCommit={value =>
                 onUpdateField?.("eyebrow", value)
               }
@@ -97,8 +123,19 @@ export default function HeroSectionRenderer({
               as="h1"
               value={data.title || "Hero title"}
               editable={editable}
+              elementKey="title"
+              elementLabel="Hero Heading"
               multiline
+              elementKey="title"
+              elementLabel="Hero Heading"
               onEditStart={onEditStart}
+              onSelectElement={(key, label) =>
+                onSelectElement?.(
+                  key,
+                  "text",
+                  label,
+                )
+              }
               onCommit={value =>
                 onUpdateField?.("title", value)
               }
@@ -115,7 +152,16 @@ export default function HeroSectionRenderer({
               value={data.subtitle || "Hero subtitle"}
               editable={editable}
               multiline
+              elementKey="subtitle"
+              elementLabel="Hero Subtitle"
               onEditStart={onEditStart}
+              onSelectElement={(key, label) =>
+                onSelectElement?.(
+                  key,
+                  "text",
+                  label,
+                )
+              }
               onCommit={value =>
                 onUpdateField?.("subtitle", value)
               }

@@ -15,7 +15,13 @@ interface EditableImageProps {
   loading?: "eager" | "lazy";
   emptyLabel?: string;
   triggerMode?: "overlay" | "corner";
+  elementKey?: string;
+  elementLabel?: string;
   onEditStart?: () => void;
+  onSelectElement?: (
+    elementKey: string,
+    label: string,
+  ) => void;
   onCommit?: (publicUrl: string) => void;
 }
 
@@ -28,7 +34,10 @@ export default function EditableImage({
   loading = "lazy",
   emptyLabel = "No image selected",
   triggerMode = "overlay",
+  elementKey,
+  elementLabel,
   onEditStart,
+  onSelectElement,
   onCommit,
 }: EditableImageProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -42,6 +51,14 @@ export default function EditableImage({
     if (!editable || uploading) return;
 
     onEditStart?.();
+
+    if (elementKey) {
+      onSelectElement?.(
+        elementKey,
+        elementLabel || elementKey,
+      );
+    }
+
     inputRef.current?.click();
   }
 
@@ -100,6 +117,15 @@ export default function EditableImage({
     <div
       className={`${wrapperClassName} group/editable-image`}
       data-editable-image="true"
+      data-editor-element-key={elementKey}
+      data-editor-element-type={
+        elementKey ? "image" : undefined
+      }
+      data-editor-element-label={
+        elementKey
+          ? elementLabel || elementKey
+          : undefined
+      }
     >
       {src ? (
         <img
