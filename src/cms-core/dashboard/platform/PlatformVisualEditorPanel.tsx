@@ -23,6 +23,13 @@ type SectionInsertPosition = "end" | "above" | "below";
 
 type PreviewMode = "desktop" | "tablet" | "mobile";
 
+interface SelectedEditorElement {
+  sectionId: string;
+  elementKey: string;
+  type: "text" | "image" | "button" | "card";
+  label: string;
+}
+
 const previewModes: Array<{
   id: PreviewMode;
   label: string;
@@ -213,6 +220,9 @@ export default function PlatformVisualEditorPanel() {
   const firstPageId = website.pages[0]?.id || "";
   const [selectedPageId, setSelectedPageId] = useState(firstPageId);
   const [selectedSectionId, setSelectedSectionId] = useState("");
+
+  const [selectedElement, setSelectedElement] =
+    useState<SelectedEditorElement | null>(null);
   const [draggedSectionId, setDraggedSectionId] = useState("");
   const [dragOverSectionId, setDragOverSectionId] = useState("");
   const [sectionLibraryOpen, setSectionLibraryOpen] = useState(false);
@@ -860,7 +870,7 @@ export default function PlatformVisualEditorPanel() {
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-145px)] flex-col">
+    <div className="flex h-[calc(100vh-145px)] min-h-0 flex-col overflow-hidden">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border p-4">
         <div>
           <p className="text-xs uppercase tracking-[0.2em] opacity-60">
@@ -937,8 +947,8 @@ export default function PlatformVisualEditorPanel() {
         </div>
       </div>
 
-      <div className="grid min-h-0 flex-1 grid-cols-1 xl:grid-cols-[250px_minmax(0,1fr)_360px]">
-        <aside className="overflow-y-auto border-r border-border bg-background">
+      <div className="grid min-h-0 flex-1 overflow-hidden grid-cols-1 xl:grid-cols-[250px_minmax(0,1fr)_360px]">
+        <aside className="min-h-0 overflow-y-auto overscroll-contain border-r border-border bg-background">
           <div className="border-b border-border p-4">
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] opacity-50">
               Navigator
@@ -1100,8 +1110,53 @@ export default function PlatformVisualEditorPanel() {
         </aside>
 
         <div
-          className="overflow-auto bg-neutral-100 p-5"
-          onClick={() => setSelectedSectionId("")}
+          className="min-h-0 overflow-auto overscroll-contain bg-neutral-100 p-5"
+          onClick={event => {
+            const target = event.target as HTMLElement;
+
+            const editableElement =
+              target.closest<HTMLElement>(
+                "[data-editor-element-key]",
+              );
+
+            if (editableElement) {
+              const sectionElement =
+                target.closest<HTMLElement>(
+                  "[data-section-id]",
+                );
+
+              const sectionId =
+                sectionElement?.dataset.sectionId ||
+                selectedSectionId;
+
+              const elementKey =
+                editableElement.dataset.editorElementKey || "";
+
+              const type =
+                (
+                  editableElement.dataset.editorElementType ||
+                  "text"
+                ) as SelectedEditorElement["type"];
+
+              const label =
+                editableElement.dataset.editorElementLabel ||
+                elementKey;
+
+              if (sectionId && elementKey) {
+                setSelectedSectionId(sectionId);
+                setSelectedElement({
+                  sectionId,
+                  elementKey,
+                  type,
+                  label,
+                });
+              }
+
+              return;
+            }
+
+            setSelectedElement(null);
+          }}
         >
           <div className="mb-3 flex items-center justify-center">
             <div className="rounded-full border border-neutral-300 bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-neutral-500 shadow-sm">
@@ -1124,19 +1179,36 @@ export default function PlatformVisualEditorPanel() {
               data-preview-mode={previewMode}
             >
               <PageRenderer
-              page={selectedPage}
-              editorMode
-              previewMode={previewMode}
-              selectedSectionId={selectedSectionId}
-              onSelectSection={selectSection}
-              onUpdateSectionData={updateSectionDataById}
-              onUpdateCollectionItem={updateCollectionItem}
-            />
+                page={selectedPage}
+                editorMode
+                previewMode={previewMode}
+                selectedSectionId={selectedSectionId}
+                onSelectSection={section => {
+                  setSelectedElement(null);
+                  selectSection(section);
+                }}
+                onSelectElement={(
+                  sectionId,
+                  elementKey,
+                  type,
+                  label,
+                ) => {
+                  setSelectedSectionId(sectionId);
+                  setSelectedElement({
+                    sectionId,
+                    elementKey,
+                    type,
+                    label,
+                  });
+                }}
+                onUpdateSectionData={updateSectionDataById}
+                onUpdateCollectionItem={updateCollectionItem}
+              />
             </div>
           </div>
         </div>
 
-        <aside className="overflow-y-auto border-l border-border bg-background">
+        <aside className="min-h-0 overflow-y-auto overscroll-contain border-l border-border bg-background">
           {!selectedSection ? (
             <div className="p-6">
               <p className="text-xs uppercase tracking-[0.2em] opacity-60">
@@ -1261,12 +1333,55 @@ export default function PlatformVisualEditorPanel() {
                   />
                 </label>
 
-                <SectionStyleInspector
-                  section={selectedSection}
-                  previewMode={previewMode}
-                  onUpdate={updateResponsiveStyle}
-                  onReset={resetResponsiveStyle}
-                />
+                {selectedElement &&
+                selectedElement.sectionId === selectedSection.id ? (
+                  <div className="border-t border-border pt-5">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] opacity-60">
+                          Element Inspector
+                        </p>
+
+                        <h3 className="mt-2 text-base font-semibold">
+                          {selectedElement.label}
+                        </h3>
+
+                        <p className="mt-1 text-xs opacity-50">
+                          {selectedElement.elementKey}
+                        </p>
+                      </div>
+
+                      <span className="rounded-full border border-border px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.14em] opacity-60">
+                        {selectedElement.type}
+                      </span>
+                    </div>
+
+                    <div className="mt-5 rounded-xl border border-dashed border-border bg-muted/30 p-4">
+                      <p className="text-sm font-medium">
+                        Element selected successfully
+                      </p>
+
+                      <p className="mt-2 text-xs leading-5 opacity-65">
+                        Typography and image styling controls will be connected here next.
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setSelectedElement(null)}
+                      className="mt-4 w-full rounded-lg border border-border px-3 py-2 text-xs font-medium hover:bg-muted"
+                    >
+                      Back to Section Inspector
+                    </button>
+                  </div>
+                ) : (
+                  <SectionStyleInspector
+                    section={selectedSection}
+                    previewMode={previewMode}
+                    onUpdate={updateResponsiveStyle}
+                    onReset={resetResponsiveStyle}
+                  />
+                )}
 
                 <div className="border-t border-border pt-5">
                   <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] opacity-60">

@@ -156,6 +156,7 @@ export default function PageRenderer({
         return (
           <div
             key={section.id}
+            data-section-id={section.id}
             role="button"
             tabIndex={0}
             style={sectionStyle}

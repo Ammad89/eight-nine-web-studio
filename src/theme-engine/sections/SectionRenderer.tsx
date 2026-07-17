@@ -9,6 +9,11 @@ interface SectionRendererProps {
   section: PageSection;
   editable?: boolean;
   onEditStart?: () => void;
+  onSelectElement?: (
+    elementKey: string,
+    type: "text" | "image" | "button" | "card",
+    label: string,
+  ) => void;
   onUpdateField?: (field: string, value: unknown) => void;
   onUpdateCollectionItem?: (
     collection: "services" | "portfolio" | "testimonials" | "faqs",
@@ -22,6 +27,7 @@ export default function SectionRenderer({
   section,
   editable = false,
   onEditStart,
+  onSelectElement,
   onUpdateField,
   onUpdateCollectionItem,
 }: SectionRendererProps) {
@@ -30,6 +36,7 @@ export default function SectionRenderer({
   const editorProps = {
     editable,
     onEditStart,
+    onSelectElement,
     onUpdateField,
   };
 

@@ -55,8 +55,6 @@ export default function HeroSectionRenderer({
             editable={editable}
             elementKey="image"
             elementLabel="Hero Image"
-            elementKey="image"
-            elementLabel="Hero Image"
             onSelectElement={(key, label) =>
               onSelectElement?.(
                 key,
@@ -126,8 +124,6 @@ export default function HeroSectionRenderer({
               elementKey="title"
               elementLabel="Hero Heading"
               multiline
-              elementKey="title"
-              elementLabel="Hero Heading"
               onEditStart={onEditStart}
               onSelectElement={(key, label) =>
                 onSelectElement?.(
