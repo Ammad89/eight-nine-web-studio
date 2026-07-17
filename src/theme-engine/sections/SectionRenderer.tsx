@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import type { PageSection } from "../../cms-core/platform";
 import HeroSectionRenderer from "./HeroSectionRenderer";
 import TextSectionRenderer from "./TextSectionRenderer";
@@ -15,6 +16,9 @@ interface SectionRendererProps {
     label: string,
   ) => void;
   onUpdateField?: (field: string, value: unknown) => void;
+  getElementStyle?: (
+    elementKey: string,
+  ) => CSSProperties;
   onUpdateCollectionItem?: (
     collection: "services" | "portfolio" | "testimonials" | "faqs",
     itemId: string,
@@ -28,6 +32,7 @@ export default function SectionRenderer({
   editable = false,
   onEditStart,
   onSelectElement,
+  getElementStyle,
   onUpdateField,
   onUpdateCollectionItem,
 }: SectionRendererProps) {
@@ -37,6 +42,7 @@ export default function SectionRenderer({
     editable,
     onEditStart,
     onSelectElement,
+    getElementStyle,
     onUpdateField,
   };
 

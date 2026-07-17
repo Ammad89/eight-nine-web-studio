@@ -135,7 +135,14 @@ export type ResponsiveDevice =
 
 export interface ElementStyle {
   width?: string;
+  maxWidth?: string;
   minHeight?: string;
+  fontSize?: number;
+  fontWeight?: number;
+  lineHeight?: number;
+  letterSpacing?: number;
+  textAlign?: "left" | "center" | "right" | "justify";
+  color?: string;
   paddingTop?: number;
   paddingBottom?: number;
   opacity?: number;
@@ -159,6 +166,7 @@ export interface PageSection {
   sortOrder: number;
   data: Record<string, unknown>;
   style?: ResponsiveStyle;
+  elementStyles?: Record<string, ResponsiveStyle>;
 }
 
 export interface PageDefinition {

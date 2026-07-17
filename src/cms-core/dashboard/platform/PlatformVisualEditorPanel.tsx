@@ -11,6 +11,7 @@ import type {
 } from "../../platform";
 import PageRenderer from "../../../theme-engine/PageRenderer";
 import SectionStyleInspector from "../../editor/Inspector/SectionStyleInspector";
+import TextElementStyleInspector from "../../editor/Inspector/TextElementStyleInspector";
 
 type SectionLibraryCategory =
   | "all"
@@ -305,6 +306,43 @@ export default function PlatformVisualEditorPanel() {
     [selectedPage, selectedSectionId],
   );
 
+
+  const selectedElementStyle = useMemo(() => {
+    if (!selectedSection || !selectedElement) {
+      return {};
+    }
+
+    const responsive =
+      selectedSection.elementStyles?.[
+        selectedElement.elementKey
+      ];
+
+    const desktop = responsive?.desktop || {};
+
+    if (previewMode === "desktop") {
+      return desktop;
+    }
+
+    const tablet = responsive?.tablet || {};
+
+    if (previewMode === "tablet") {
+      return {
+        ...desktop,
+        ...tablet,
+      };
+    }
+
+    return {
+      ...desktop,
+      ...tablet,
+      ...(responsive?.mobile || {}),
+    };
+  }, [
+    selectedSection,
+    selectedElement,
+    previewMode,
+  ]);
+
   const orderedSections = useMemo(
     () =>
       [...(selectedPage?.sections || [])].sort(
@@ -410,6 +448,105 @@ export default function PlatformVisualEditorPanel() {
         },
       };
     });
+  }
+
+  function updateSelectedElementStyle(
+    property: keyof ElementStyle,
+    value: ElementStyle[keyof ElementStyle],
+  ) {
+    if (!selectedPage || !selectedSection || !selectedElement) {
+      return;
+    }
+
+    setWebsite(current => ({
+      ...current,
+      pages: current.pages.map(page =>
+        page.id !== selectedPage.id
+          ? page
+          : {
+              ...page,
+              sections: page.sections.map(section => {
+                if (section.id !== selectedSection.id) {
+                  return section;
+                }
+
+                const currentResponsive =
+                  section.elementStyles?.[
+                    selectedElement.elementKey
+                  ] || {};
+
+                const currentDeviceStyle =
+                  currentResponsive[previewMode] || {};
+
+                const nextDeviceStyle = {
+                  ...currentDeviceStyle,
+                  [property]: value,
+                };
+
+                if (value === undefined) {
+                  delete nextDeviceStyle[property];
+                }
+
+                return {
+                  ...section,
+                  elementStyles: {
+                    ...(section.elementStyles || {}),
+                    [selectedElement.elementKey]: {
+                      ...currentResponsive,
+                      [previewMode]: nextDeviceStyle,
+                    },
+                  },
+                };
+              }),
+            },
+      ),
+      publishing: {
+        ...current.publishing,
+        updatedAt: new Date().toISOString(),
+      },
+    }));
+  }
+
+  function resetSelectedElementStyle() {
+    if (!selectedPage || !selectedSection || !selectedElement) {
+      return;
+    }
+
+    setWebsite(current => ({
+      ...current,
+      pages: current.pages.map(page =>
+        page.id !== selectedPage.id
+          ? page
+          : {
+              ...page,
+              sections: page.sections.map(section => {
+                if (section.id !== selectedSection.id) {
+                  return section;
+                }
+
+                const currentResponsive =
+                  section.elementStyles?.[
+                    selectedElement.elementKey
+                  ] || {};
+
+                return {
+                  ...section,
+                  elementStyles: {
+                    ...(section.elementStyles || {}),
+                    [selectedElement.elementKey]: {
+                      ...currentResponsive,
+                      [previewMode]: {},
+                    },
+                  },
+                };
+              }),
+            },
+      ),
+      publishing: {
+        ...current.publishing,
+        updatedAt: new Date().toISOString(),
+      },
+    }));
   }
 
   function updateResponsiveStyle(
@@ -1356,15 +1493,24 @@ export default function PlatformVisualEditorPanel() {
                       </span>
                     </div>
 
-                    <div className="mt-5 rounded-xl border border-dashed border-border bg-muted/30 p-4">
-                      <p className="text-sm font-medium">
-                        Element selected successfully
-                      </p>
+                    {selectedElement.type === "text" ? (
+                      <TextElementStyleInspector
+                        style={selectedElementStyle}
+                        previewMode={previewMode}
+                        onUpdate={updateSelectedElementStyle}
+                        onReset={resetSelectedElementStyle}
+                      />
+                    ) : (
+                      <div className="mt-5 rounded-xl border border-dashed border-border bg-muted/30 p-4">
+                        <p className="text-sm font-medium">
+                          {selectedElement.type} controls
+                        </p>
 
-                      <p className="mt-2 text-xs leading-5 opacity-65">
-                        Typography and image styling controls will be connected here next.
-                      </p>
-                    </div>
+                        <p className="mt-2 text-xs leading-5 opacity-65">
+                          This element type will be connected in the next styling build.
+                        </p>
+                      </div>
+                    )}
 
                     <button
                       type="button"

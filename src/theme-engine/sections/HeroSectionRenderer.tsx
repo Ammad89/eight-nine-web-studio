@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { Link } from "react-router";
 import { ArrowRight } from "lucide-react";
 import { resolveThemeAsset } from "../";
@@ -26,6 +27,9 @@ interface RendererProps {
     type: "text" | "image" | "button" | "card",
     label: string,
   ) => void;
+  getElementStyle?: (
+    elementKey: string,
+  ) => CSSProperties;
   onUpdateField?: (field: string, value: unknown) => void;
 }
 
@@ -38,6 +42,7 @@ export default function HeroSectionRenderer({
   editable = false,
   onEditStart,
   onSelectElement,
+  getElementStyle,
   onUpdateField,
 }: RendererProps) {
   if (!isHeroSectionData(data)) return null;
@@ -108,6 +113,7 @@ export default function HeroSectionRenderer({
               onCommit={value =>
                 onUpdateField?.("eyebrow", value)
               }
+              style={getElementStyle?.("eyebrow")}
               className={`mb-5 text-[10px] font-medium uppercase tracking-[0.35em] ${
                 imageSrc
                   ? "text-white/70"
@@ -138,7 +144,10 @@ export default function HeroSectionRenderer({
               className={`mb-6 text-4xl font-medium leading-tight sm:text-6xl ${
                 imageSrc ? "text-white" : "text-foreground"
               }`}
-              style={{ fontFamily: "'Lora', Georgia, serif" }}
+              style={{
+                fontFamily: "'Lora', Georgia, serif",
+                ...getElementStyle?.("title"),
+              }}
             />
           )}
 
@@ -161,6 +170,7 @@ export default function HeroSectionRenderer({
               onCommit={value =>
                 onUpdateField?.("subtitle", value)
               }
+              style={getElementStyle?.("subtitle")}
               className={`mb-9 text-base leading-relaxed sm:text-lg ${
                 imageSrc
                   ? "text-white/75"

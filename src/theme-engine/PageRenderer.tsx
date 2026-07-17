@@ -60,6 +60,69 @@ function resolveStyle(
   };
 }
 
+function resolveElementStyle(
+  section: PageSection,
+  elementKey: string,
+  device: ResponsiveDevice,
+): ElementStyle {
+  const responsive =
+    section.elementStyles?.[elementKey];
+
+  if (!responsive) return {};
+
+  const desktop = responsive.desktop || {};
+
+  if (device === "desktop") {
+    return desktop;
+  }
+
+  const tablet = responsive.tablet || {};
+
+  if (device === "tablet") {
+    return {
+      ...desktop,
+      ...tablet,
+    };
+  }
+
+  return {
+    ...desktop,
+    ...tablet,
+    ...(responsive.mobile || {}),
+  };
+}
+
+function toElementCssStyle(
+  style: ElementStyle,
+): CSSProperties {
+  return {
+    width: style.width || undefined,
+    maxWidth: style.maxWidth || undefined,
+    fontSize:
+      typeof style.fontSize === "number"
+        ? `${style.fontSize}px`
+        : undefined,
+    fontWeight:
+      typeof style.fontWeight === "number"
+        ? style.fontWeight
+        : undefined,
+    lineHeight:
+      typeof style.lineHeight === "number"
+        ? style.lineHeight
+        : undefined,
+    letterSpacing:
+      typeof style.letterSpacing === "number"
+        ? `${style.letterSpacing}px`
+        : undefined,
+    textAlign: style.textAlign || undefined,
+    color: style.color || undefined,
+    opacity:
+      typeof style.opacity === "number"
+        ? style.opacity
+        : undefined,
+  };
+}
+
 function toCssStyle(
   style: ElementStyle,
 ): CSSProperties {
@@ -148,7 +211,18 @@ export default function PageRenderer({
               key={section.id}
               style={sectionStyle}
             >
-              <SectionRenderer section={section} />
+              <SectionRenderer
+                section={section}
+                getElementStyle={elementKey =>
+                  toElementCssStyle(
+                    resolveElementStyle(
+                      section,
+                      elementKey,
+                      previewMode,
+                    ),
+                  )
+                }
+              />
             </div>
           );
         }
@@ -231,6 +305,15 @@ export default function PageRenderer({
               }
               onUpdateCollectionItem={
                 onUpdateCollectionItem
+              }
+              getElementStyle={elementKey =>
+                toElementCssStyle(
+                  resolveElementStyle(
+                    section,
+                    elementKey,
+                    previewMode,
+                  ),
+                )
               }
             />
           </div>
